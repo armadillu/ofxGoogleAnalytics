@@ -8,20 +8,23 @@ void ofApp::setup(){
 
 	currentScreen = 1;
 
-	//add listener to GoogleAnalytics, to get feedback
-	ofAddListener(ga.gaResponse, this, &ofApp::googleAnalyticsResponse);
+	ga = new ofxGoogleAnalytics();
 
-	ga.setup("UA-51706745-1",				//google track ID
+	//add listener to GoogleAnalytics, to get feedback
+	ofAddListener(ga->gaResponse, this, &ofApp::googleAnalyticsResponse);
+
+
+	ga->setup("UA-51706745-1",				//google track ID
 			 "ofxGoogleAnalyticsExample",	//app name
 			 "0.1",							//app version
 			 "myAppID",						//ap id
 			 "myAppInstallerID"				//app installer id
 			 );
 
-	ga.setShouldReportFramerates(true); //send timing tracking info
-	ga.setFramerateReportInterval(5); //every 60 sec, report app's framerate
+	ga->setShouldReportFramerates(true); //send timing tracking info
+	ga->setFramerateReportInterval(60); //every 60 sec, report app's framerate
 
-	ga.setUserID("armadillu"); //you can set a random user string for the GA session
+	ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
 }
 
@@ -33,7 +36,7 @@ void ofApp::googleAnalyticsResponse(ofxGoogleAnalytics::AnalyticsResponse &r){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-	ga.update();
+	ga->update();
 }
 
 //--------------------------------------------------------------
@@ -45,7 +48,7 @@ void ofApp::draw(){
 	color.b = (currentScreen == 3 ? 60 : 0);
 	ofBackground(color);
 
-	ga.draw(30,30);
+	ga->draw(30,30);
 
 	ofSetColor(200);
 	ofDrawBitmapString("Screen: " + ofToString(currentScreen) + "\n"
@@ -54,6 +57,13 @@ void ofApp::draw(){
 					   "press 7-9 to report Events\n",
 					   20, ofGetHeight() - 54);
 }
+
+
+void ofApp::exit(){
+	delete ga; //deleting the GA object closes the current session
+	ga = NULL;
+}
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
@@ -73,15 +83,15 @@ void ofApp::keyReleased(int key){
 	string currentScreenS = "screen"+ofToString(currentScreen);
 	
 	switch (key) {
-		case '1': ga.sendScreenView(currentScreenS); break;
-		case '2': ga.sendScreenView(currentScreenS); break;
-		case '3': ga.sendScreenView(currentScreenS); break;
-		case '4': ga.sendException("Exception1", false); break;
-		case '5': ga.sendException("Exception2", false); break;
-		case '6': ga.sendException("Exception3", true); break;
-		case '7': ga.sendEvent("KeyboardEvent", "pressed7", key, "someLabel"); break;
-		case '8': ga.sendEvent("KeyboardEvent", "pressed8", key, "someLabel"); break;
-		case '9': ga.sendEvent("KeyboardEvent", "pressed9", key, "someLabel"); break;
+		case '1': ga->sendScreenView(currentScreenS); break;
+		case '2': ga->sendScreenView(currentScreenS); break;
+		case '3': ga->sendScreenView(currentScreenS); break;
+		case '4': ga->sendException("Exception1", false); break;
+		case '5': ga->sendException("Exception2", false); break;
+		case '6': ga->sendException("Exception3", true); break;
+		case '7': ga->sendEvent("KeyboardEvent", "pressed7", key, "someLabel"); break;
+		case '8': ga->sendEvent("KeyboardEvent", "pressed8", key, "someLabel"); break;
+		case '9': ga->sendEvent("KeyboardEvent", "pressed9", key, "someLabel"); break;
 	}
 }
 
