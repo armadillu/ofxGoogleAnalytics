@@ -126,7 +126,7 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=AppTiming";
 	query += "&utv=FrameRate";
-	query += "&utt=" + UriEncode(ofToString((int)ofGetFrameRate()));
+	query += "&utt=" + UriEncode(ofToString((int)(ofGetFrameRate() * 1000)) ); //to seconds
 	query += "&ni=1";
 	sendRequest(query);
 }
