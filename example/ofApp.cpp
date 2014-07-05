@@ -20,6 +20,9 @@ void ofApp::setup(){
 
 	ga.setShouldReportFramerates(true); //send timing tracking info
 	ga.setFramerateReportInterval(5); //every 60 sec, report app's framerate
+
+	ga.setUserID("armadillu"); //you can set a random user string for the GA session
+
 }
 
 //get feedback on our request

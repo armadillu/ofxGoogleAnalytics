@@ -89,11 +89,28 @@ void ofxGoogleAnalytics::draw(int x, int y){
 	http->draw(x, y);
 }
 
+
+//void ofxGoogleAnalytics::setCustomMetric(int ID, string name, int value){
+//	if (ID < 20 && ID >= 0){
+//		customMetrics[ID] = name;
+//	}else{
+//		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
+//		ofLogError() << "metric ID's should be between 0 and 20";
+//	}
+//}
+
+void ofxGoogleAnalytics::setUserID(string userName){
+	userID = UriEncode(userName);
+}
+
 void ofxGoogleAnalytics::setCustomUserAgent(string ua){
 	customUserAgent = UriEncode(ua);
 	http->setUserAgent(customUserAgent);
 }
 
+void ofxGoogleAnalytics::setIP(string ipAddress_){
+	ipAddress = UriEncode(ipAddress_);
+}
 
 void ofxGoogleAnalytics::setShouldReportFramerates(bool b){
 	reportFrameRates = b;
@@ -139,7 +156,7 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 
 	string query = basicQuery(AnalyticsException);
 	query += "&exd=" + UriEncode(description);
-	query += "&exdf=" + string(fatal ? "1" : "0");
+	query += "&exf=" + string(fatal ? "1" : "0");
 	sendRequest(query);
 }
 
@@ -182,6 +199,7 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	}
 
 	//q += "&ua=" + ua; //User Agent now set at ofxSimplehttp level
+
 	//q += "&sr=" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
 	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
@@ -190,6 +208,9 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	if (cfg.appVersion.size()) q += "&av=" + cfg.appVersion;
 	if (cfg.appID.size()) q += "&aid=" + cfg.appID;
 	if (cfg.appInstallerID.size()) q += "&aiid=" + cfg.appInstallerID;
+
+	if (userID.size() > 0 ) q += "&uid=" + userID;
+	if (ipAddress.size()) q += "&uip=" + ipAddress;
 
 	return q;
 }

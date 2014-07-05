@@ -44,10 +44,14 @@ class ofxGoogleAnalytics{
 		void sendException(string description, bool fatal);
 		void sendFrameRateReport();
 
-	void setCustomUserAgent(string ua);
+		void setCustomUserAgent(string ua);
 		void setShouldReportFramerates(bool);
 		void setFramerateReportInterval(float sec);
+		void setUserID(string userName);
+		void setIP(string ipAddress);
+		//void setCustomMetric(int ID, string name, int value);
 
+		//if you want to be notified of ok / ko
 		ofEvent<AnalyticsResponse> gaResponse;
 
 	private:
@@ -87,6 +91,11 @@ class ofxGoogleAnalytics{
 		int requestCounter;
 		string customUserAgent;
 		string cachedUserAgent;
+
+		string userID;
+		string ipAddress;
+
+		map<int,string> customMetrics;
 
 		// utils
 		void endSession();
