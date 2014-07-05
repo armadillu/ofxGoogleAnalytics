@@ -23,5 +23,7 @@ public:
 
 	ofxGoogleAnalytics ga;
 
+	int currentScreen;
+
 	void googleAnalyticsResponse(ofxGoogleAnalytics::AnalyticsResponse &response);
 };

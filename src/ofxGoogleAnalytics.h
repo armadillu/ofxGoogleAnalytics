@@ -28,6 +28,7 @@ class ofxGoogleAnalytics{
 		};
 
 		ofxGoogleAnalytics();
+		~ofxGoogleAnalytics();
 
 		void setup(string googleTrackingID,
 				   string appName = "",
@@ -38,9 +39,14 @@ class ofxGoogleAnalytics{
 		void update();
 		void draw(int x, int y);
 
-		void sendEvent(string category, string action, int value = 0, string label = "");
+		void sendEvent(string category, string action, string currentScreen, int value = 0, string label = "");
 		void sendScreenView(string screenName);
 		void sendException(string description, bool fatal);
+		void sendFrameRateReport();
+
+		void setCustomUserAgent(string ua){customUserAgent = ua;}
+		void setShouldReportFramerates(bool);
+		void setFramerateReportInterval(float sec);
 
 		ofEvent<AnalyticsResponse> gaResponse;
 
@@ -59,7 +65,8 @@ class ofxGoogleAnalytics{
 		enum AnalyticsHitType{
 			AnalyticsScreenView,
 			AnalyticsEvent,
-			AnalyticsException
+			AnalyticsException,
+			AnalyticsTiming
 		};
 
 		AnalyticsConfig cfg;
@@ -67,15 +74,29 @@ class ofxGoogleAnalytics{
 		// http response from ofxSimpleHttp
 		void googleResponse(ofxSimpleHttpResponse &response);
 
-		ofxSimpleHttp http;
+		ofxSimpleHttp * http;
+
+		bool isSetup;
+
+		bool reportFrameRates;
+		float reportFrameRatesInterval; //in sec
+		float reportTime; //in sec
+
+		int requestCounter;
+		string customUserAgent;
+		string cachedUserAgent;
 
 		// utils
+		void endSession();
+		void startSession();
+
 		string basicQuery(AnalyticsHitType type);
 		string getNewUUID();
 		string loadUUID();
 		string generateUUID();
+		string getUserAgent();
 
-		void sendRequest(string queryString);
+		void sendRequest(string queryString, bool blocking = false);
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
