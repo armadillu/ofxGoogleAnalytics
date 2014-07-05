@@ -9,11 +9,11 @@ To use it, do the following:
 	
 	void setup(){
 	
-		ga.setup(	"UA-51706745-1",	//google track ID
-			 		"myAppname",		//app name
-					 "0.1",				//app version
-					 "myAppID",			//ap id
-					 "myAppInstallerID"	//app installer id
+		ga.setup(	"UA-51706745-1",	//google track ID (required)
+			 		"myAppname",		//app name (optional)
+					 "0.1",				//app version (optional)
+					 "myAppID",			//ap id (optional)
+					 "myAppInstallerID"	//app installer id (optional)
 			 );
 	}
 	
@@ -21,7 +21,7 @@ To use it, do the following:
 		ga.update();
 	}
 
-	//and then, just call:
+	//and then, just call when appropriate
 	
 	//screen views
 	ga.sendScreenView("screen1");
@@ -30,7 +30,7 @@ To use it, do the following:
 	ga.sendEvent("KeyboardEvent", "keyDown", 'a', "someLabel");
 
 	//exceptions
-	ga.sendException("Exception1", false); break;
+	ga.sendException("Exception1", false);
 	
 
 
