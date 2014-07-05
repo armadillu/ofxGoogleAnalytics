@@ -40,6 +40,6 @@ It requires [ofxSimpleHttp](https://github.com/armadillu/ofxSimpleHttp).
 
 All the requests are threaded in a single queue so they should not affect your app performance.
 
-It creates an unique UUID the first time that's launched, and it stores it in "data/UUID.txt". this way you can uniquely identify the app/installation across sessions.
+It creates an unique UUID the first time that's launched, and it stores it in "data/UUID.txt" so that you can uniquely identify a unique app/installation instance across sessions.
 
 Still a very WIP!
