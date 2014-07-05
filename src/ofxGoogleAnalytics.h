@@ -39,12 +39,12 @@ class ofxGoogleAnalytics{
 		void update();
 		void draw(int x, int y);
 
-		void sendEvent(string category, string action, string currentScreen, int value = 0, string label = "");
+		void sendEvent(string category, string action, int value = 0, string label = "");
 		void sendScreenView(string screenName);
 		void sendException(string description, bool fatal);
 		void sendFrameRateReport();
 
-		void setCustomUserAgent(string ua){customUserAgent = ua;}
+	void setCustomUserAgent(string ua);
 		void setShouldReportFramerates(bool);
 		void setFramerateReportInterval(float sec);
 
@@ -81,6 +81,8 @@ class ofxGoogleAnalytics{
 		bool reportFrameRates;
 		float reportFrameRatesInterval; //in sec
 		float reportTime; //in sec
+
+		string lastUserScreen;
 
 		int requestCounter;
 		string customUserAgent;

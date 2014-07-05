@@ -68,6 +68,7 @@ void ofApp::keyPressed(int key){
 void ofApp::keyReleased(int key){
 
 	string currentScreenS = "screen"+ofToString(currentScreen);
+	
 	switch (key) {
 		case '1': ga.sendScreenView(currentScreenS); break;
 		case '2': ga.sendScreenView(currentScreenS); break;
@@ -75,9 +76,9 @@ void ofApp::keyReleased(int key){
 		case '4': ga.sendException("Exception1", false); break;
 		case '5': ga.sendException("Exception2", false); break;
 		case '6': ga.sendException("Exception3", true); break;
-		case '7': ga.sendEvent("KeyboardEvent", "pressed7", currentScreenS, key, "someLabel"); break;
-		case '8': ga.sendEvent("KeyboardEvent", "pressed8", currentScreenS,  key, "someLabel"); break;
-		case '9': ga.sendEvent("KeyboardEvent", "pressed9", currentScreenS, key, "someLabel"); break;
+		case '7': ga.sendEvent("KeyboardEvent", "pressed7", key, "someLabel"); break;
+		case '8': ga.sendEvent("KeyboardEvent", "pressed8", key, "someLabel"); break;
+		case '9': ga.sendEvent("KeyboardEvent", "pressed9", key, "someLabel"); break;
 	}
 }
 

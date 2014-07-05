@@ -18,7 +18,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
-	http->setUserAgent("ofxGoogleAnalytics");
+	http->setUserAgent(cachedUserAgent);
 	http->setCancelCurrentDownloadOnDestruction(false);
 
 	//add download listener
@@ -33,12 +33,12 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	}
 }
 
+
 ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	if(isSetup){
 		endSession();
 	}
 }
-
 
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
 							   string appID, string appInstallerID){
@@ -89,6 +89,12 @@ void ofxGoogleAnalytics::draw(int x, int y){
 	http->draw(x, y);
 }
 
+void ofxGoogleAnalytics::setCustomUserAgent(string ua){
+	customUserAgent = UriEncode(ua);
+	http->setUserAgent(customUserAgent);
+}
+
+
 void ofxGoogleAnalytics::setShouldReportFramerates(bool b){
 	reportFrameRates = b;
 }
@@ -103,17 +109,17 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=AppTiming";
 	query += "&utv=FrameRate";
-	query += "&utt=" + UriEncode(ofToString(ofGetFrameRate(), 1));
+	query += "&utt=" + UriEncode(ofToString((int)ofGetFrameRate()));
 	query += "&ni=1";
 	sendRequest(query);
 }
 
-void ofxGoogleAnalytics::sendEvent(string category, string action, string currentScreen, int value, string label){
+void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label){
 
 	string query = basicQuery(AnalyticsEvent);
 	query += "&ec=" + UriEncode(category);
 	query += "&ea=" + UriEncode(action);
-	query += "&cd=" + UriEncode(currentScreen);
+	if(lastUserScreen.size() > 0) query += "&cd=" + UriEncode(lastUserScreen);
 	if (label.size()) query += "&el=" + UriEncode(label);
 	query += "&ev=" + ofToString(value);
 	sendRequest(query);
@@ -122,6 +128,7 @@ void ofxGoogleAnalytics::sendEvent(string category, string action, string curren
 
 void ofxGoogleAnalytics::sendScreenView(string screenName){
 
+	lastUserScreen = screenName;
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&cd=" + UriEncode(screenName);
 	sendRequest(query);
@@ -163,10 +170,18 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	}
 
 	string q;
-	q += "v=1&tid=" + cfg.trackingID;
+	q += "v=1";
+	q += "&tid=" + cfg.trackingID;
 	q += "&cid=" + cfg.currentUUID;
-	q += "&ua=" + ua;
 
+	switch (type) {
+		case AnalyticsScreenView: q+= "&t=screenview";break;
+		case AnalyticsEvent: q+= "&t=event";break;
+		case AnalyticsException: q+= "&t=exception";break;
+		case AnalyticsTiming: q+= "&t=timing"; break;
+	}
+
+	//q += "&ua=" + ua; //User Agent now set at ofxSimplehttp level
 	//q += "&sr=" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
 	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
@@ -176,12 +191,6 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	if (cfg.appID.size()) q += "&aid=" + cfg.appID;
 	if (cfg.appInstallerID.size()) q += "&aiid=" + cfg.appInstallerID;
 
-	switch (type) {
-		case AnalyticsScreenView: q+= "&t=screenview";break;
-		case AnalyticsEvent: q+= "&t=event";break;
-		case AnalyticsException: q+= "&t=exception";break;
-		case AnalyticsTiming: q+= "%t=timing"; break;
-	}
 	return q;
 }
 
