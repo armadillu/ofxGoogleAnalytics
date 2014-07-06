@@ -22,7 +22,7 @@ void ofApp::setup(){
 			 );
 
 	ga->setShouldReportFramerates(true); //send timing tracking info
-	ga->setFramerateReportInterval(60); //every 60 sec, report app's framerate
+	ga->setFramerateReportInterval(5); //every 60 sec, report app's framerate
 
 	ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
@@ -54,8 +54,9 @@ void ofApp::draw(){
 	ofDrawBitmapString("Screen: " + ofToString(currentScreen) + "\n"
 					   "press 1-3 to report different screenViews\n"
 					   "press 4-6 to report Excpetions\n"
-					   "press 7-9 to report Events\n",
-					   20, ofGetHeight() - 54);
+					   "press 7-9 to report Events\n"
+					   "press q,a,z to report PageViews\n",
+					   20, ofGetHeight() - 68);
 }
 
 
@@ -92,6 +93,9 @@ void ofApp::keyReleased(int key){
 		case '7': ga->sendEvent("KeyboardEvent", "pressed7", key, "someLabel"); break;
 		case '8': ga->sendEvent("KeyboardEvent", "pressed8", key, "someLabel"); break;
 		case '9': ga->sendEvent("KeyboardEvent", "pressed9", key, "someLabel"); break;
+		case 'q': ga->sendPageView("keyboardKeys/row1/q", "my page for Q key"); break;
+		case 'a': ga->sendPageView("keyboardKeys/row2/a", "my page for A key"); break;
+		case 'z': ga->sendPageView("keyboardKeys/row3/z", "my page for Z key"); break;
 	}
 }
 

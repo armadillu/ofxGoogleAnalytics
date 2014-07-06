@@ -142,9 +142,7 @@ void ofxGoogleAnalytics::sendEvent(string category, string action, int value, st
 	sendRequest(query);
 }
 
-
 void ofxGoogleAnalytics::sendScreenView(string screenName){
-
 	lastUserScreen = screenName;
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&cd=" + UriEncode(screenName);
@@ -152,8 +150,15 @@ void ofxGoogleAnalytics::sendScreenView(string screenName){
 }
 
 
-void ofxGoogleAnalytics::sendException(string description, bool fatal){
+void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle){
+	string query = basicQuery(AnalyticsPageview);
+	query += "&dp=" + UriEncode("/" + documentPath);
+	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
+	sendRequest(query);
+}
 
+
+void ofxGoogleAnalytics::sendException(string description, bool fatal){
 	string query = basicQuery(AnalyticsException);
 	query += "&exd=" + UriEncode(description);
 	query += "&exf=" + string(fatal ? "1" : "0");
@@ -196,6 +201,7 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 		case AnalyticsEvent: q+= "&t=event";break;
 		case AnalyticsException: q+= "&t=exception";break;
 		case AnalyticsTiming: q+= "&t=timing"; break;
+		case AnalyticsPageview: q+= "&t=pageview"; break;
 	}
 
 	//q += "&ua=" + ua; //User Agent now set at ofxSimplehttp level
@@ -203,6 +209,12 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	//q += "&sr=" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
 	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
+
+	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
+	"." + ofToString(ofGetVersionPatch());
+
+	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
+	q += "&fl=OF_" + ofVersion + "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 
 	if (cfg.appName.size()) q += "&an=" + cfg.appName;
 	if (cfg.appVersion.size()) q += "&av=" + cfg.appVersion;
@@ -254,19 +266,14 @@ string ofxGoogleAnalytics::getUserAgent(){
 			Gestalt(gestaltSystemVersionBugFix, &bugfix);
 			Gestalt(gestaltSystemVersionMajor, &major);
 			Gestalt(gestaltSystemVersionMinor, &minor);
-			string cpu = ofSystem("uname -m"); //this is quite ghetto TODO
-			string os = ofSystem("uname");
-			string platform = os + " " + cpu ;
-			ofStringReplace(platform, "\n", "");
-			ofStringReplace(platform, "\xff", "");
 
-			platS = "(Macintosh; " + platform + "; Mac OS X " + ofToString(major) + "_" +
+			platS = "(Macintosh; Intel Mac OS X " + ofToString(major) + "_" +
 					ofToString(minor) + "_" + ofToString(bugfix) + ")";
 			#endif
 			}break;
-		case OF_TARGET_WINGCC: platS = "(Windows 8; GCC)"; break;
-		case OF_TARGET_WINVS:  platS = "(Windows 8; Visual Studio)"; break;
-		case OF_TARGET_IOS: platS = "(iOS 8)"; break;
+		case OF_TARGET_WINGCC: platS = "(Windows; GCC)"; break;
+		case OF_TARGET_WINVS:  platS = "(Windows; Visual Studio)"; break;
+		case OF_TARGET_IOS: platS = "(iOS)"; break;
 		case OF_TARGET_ANDROID: platS = "(Android)"; break;
 		case OF_TARGET_LINUX: platS = "(Linux)"; break;
 		case OF_TARGET_LINUX64: platS = "(Linux 64)"; break;
@@ -275,10 +282,9 @@ string ofxGoogleAnalytics::getUserAgent(){
 		default:  platS = "(Unknown Platform)"; break;
 	}
 
-	
 	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
 						"." + ofToString(ofGetVersionPatch());
-	string all = "ofxGoogleAnalytics + OpenFrameworks " + ofVersion + "; " + platS;
+	string all = "Mozilla/5.0 " + platS + " ofxSimpleHttp OpenFrameworks/" + ofVersion;
 	return UriEncode(all);
 }
 

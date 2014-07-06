@@ -41,6 +41,7 @@ class ofxGoogleAnalytics{
 
 		void sendEvent(string category, string action, int value = 0, string label = "");
 		void sendScreenView(string screenName);
+		void sendPageView(string documentPath, string documentTitle = ""); //still not sure if this works on "App" reports
 		void sendException(string description, bool fatal);
 		void sendFrameRateReport();
 
@@ -70,7 +71,8 @@ class ofxGoogleAnalytics{
 			AnalyticsScreenView,
 			AnalyticsEvent,
 			AnalyticsException,
-			AnalyticsTiming
+			AnalyticsTiming,
+			AnalyticsPageview
 		};
 
 		AnalyticsConfig cfg;
