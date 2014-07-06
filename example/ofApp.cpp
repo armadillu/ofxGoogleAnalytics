@@ -55,8 +55,9 @@ void ofApp::draw(){
 					   "press 1-3 to report different screenViews\n"
 					   "press 4-6 to report Excpetions\n"
 					   "press 7-9 to report Events\n"
-					   "press q,a,z to report PageViews\n",
-					   20, ofGetHeight() - 68);
+					   "press q,a,z to report PageViews\n"
+					   "press SPACEBAR to report a simple benchmark\n",
+					   20, ofGetHeight() - 84);
 }
 
 
@@ -96,6 +97,17 @@ void ofApp::keyReleased(int key){
 		case 'q': ga->sendPageView("keyboardKeys/row1/q", "my page for Q key"); break;
 		case 'a': ga->sendPageView("keyboardKeys/row2/a", "my page for A key"); break;
 		case 'z': ga->sendPageView("keyboardKeys/row3/z", "my page for Z key"); break;
+
+		case ' ':{
+			//measure how long it takes to calc 9000000 sinf()'s
+			float t = ofGetElapsedTimef();
+			for(int i = 0; i < 9000000; i++){
+				float r = sinf(i);
+			}
+			t = ofGetElapsedTimef() - t;
+			//send that timing
+			ga->sendCustomTimeMeasurement("SimpleBenchMark", "9000000 sinf()", t * 1000);
+		}break;
 	}
 }
 

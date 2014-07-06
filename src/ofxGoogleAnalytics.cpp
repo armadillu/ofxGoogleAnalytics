@@ -131,6 +131,17 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 	sendRequest(query);
 }
 
+void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string timingVariable,
+							   int timeInMs, string timingLabel){
+	string query = basicQuery(AnalyticsTiming);
+	query += "&utc=" + UriEncode(timingCategory);
+	query += "&utv=" + UriEncode(timingVariable);
+	query += "&utt=" + UriEncode(ofToString((int)(timeInMs)));
+	query += "&utl=" + UriEncode(timingLabel);
+	query += "&ni=1";
+	sendRequest(query);
+}
+
 void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label){
 
 	string query = basicQuery(AnalyticsEvent);
