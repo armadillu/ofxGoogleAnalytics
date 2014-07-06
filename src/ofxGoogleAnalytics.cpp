@@ -295,7 +295,7 @@ string ofxGoogleAnalytics::getUserAgent(){
 
 	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
 						"." + ofToString(ofGetVersionPatch());
-	string all = "Mozilla/5.0 " + platS + " ofxSimpleHttp OpenFrameworks/" + ofVersion;
+	string all = "ofxSimpleHttp/ofxGoogleAnalytics " + platS + " OpenFrameworks/" + ofVersion;
 	return UriEncode(all);
 }
 
