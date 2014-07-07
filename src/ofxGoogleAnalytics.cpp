@@ -12,6 +12,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	requestCounter = 0;
 	isSetup = false;
+	enabled = true;
 	reportFrameRates = false;
 	reportFrameRatesInterval = 60;
 	cachedUserAgent = getUserAgent();
@@ -76,6 +77,9 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 }
 
 void ofxGoogleAnalytics::update(){
+
+	if(!enabled) return;
+
 	http->update();
 	if (reportFrameRates){
 		if(ofGetElapsedTimef() - reportTime > reportFrameRatesInterval){
@@ -123,6 +127,7 @@ void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 
 
 void ofxGoogleAnalytics::sendFrameRateReport(){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=AppTiming";
 	query += "&utv=FrameRate";
@@ -133,6 +138,7 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 
 void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string timingVariable,
 							   int timeInMs, string timingLabel){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=" + UriEncode(timingCategory);
 	query += "&utv=" + UriEncode(timingVariable);
@@ -144,6 +150,7 @@ void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string
 
 void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label){
 
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsEvent);
 	query += "&ec=" + UriEncode(category);
 	query += "&ea=" + UriEncode(action);
@@ -154,6 +161,7 @@ void ofxGoogleAnalytics::sendEvent(string category, string action, int value, st
 }
 
 void ofxGoogleAnalytics::sendScreenView(string screenName){
+	OFX_GA_CHECKS();
 	lastUserScreen = screenName;
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&cd=" + UriEncode(screenName);
@@ -162,6 +170,7 @@ void ofxGoogleAnalytics::sendScreenView(string screenName){
 
 
 void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsPageview);
 	query += "&dp=" + UriEncode("/" + documentPath);
 	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
@@ -170,6 +179,7 @@ void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle)
 
 
 void ofxGoogleAnalytics::sendException(string description, bool fatal){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsException);
 	query += "&exd=" + UriEncode(description);
 	query += "&exf=" + string(fatal ? "1" : "0");

@@ -18,6 +18,11 @@
 #define UUID_FILENAME "UUID.txt"
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 
+#define OFX_GA_CHECKS() if(!enabled) return;											\
+						if(!isSetup){													\
+							ofLogError() <<	"ofxGoogleAnalytics: call setUp() first!";	\
+							return;														\
+						}
 
 class ofxGoogleAnalytics{
 
@@ -39,7 +44,7 @@ class ofxGoogleAnalytics{
 		void update();
 		void draw(int x, int y);
 
-
+		void setEnabled(bool enabled_){ enabled = enabled_;}
 
 		//these works for "App" type reports views
 		//where a "Screen" is the content unit.
@@ -107,6 +112,7 @@ class ofxGoogleAnalytics{
 
 		ofxSimpleHttp * http;
 
+		bool enabled;
 		bool isSetup;
 
 		bool reportFrameRates;
