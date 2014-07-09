@@ -265,7 +265,9 @@ void ofxGoogleAnalytics::sendRequest(string queryString, bool blocking){
 
 void ofxGoogleAnalytics::googleResponse(ofxSimpleHttpResponse &res){
 
-	res.print();
+	if(ofGetLogLevel() == OF_LOG_VERBOSE) {
+		res.print();
+	}
 	AnalyticsResponse r;
 	if (res.status < 300 && res.status > 200){
 		r.status = "ok - " + ofToString(res.status);;
