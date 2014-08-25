@@ -30,6 +30,7 @@ class ofxGoogleAnalytics{
 
 		struct AnalyticsResponse{
 			string status;
+			int httpStatus;
 		};
 
 		ofxGoogleAnalytics();
