@@ -270,9 +270,11 @@ void ofxGoogleAnalytics::googleResponse(ofxSimpleHttpResponse &res){
 	}
 	AnalyticsResponse r;
 	r.httpStatus = res.status;
-	if (res.status < 300 && res.status > 200){
+	if (res.status < 300 && res.status >= 200){
+		r.ok = true;
 		r.status = "ok - " + ofToString(res.status);
 	}else{
+		r.ok = false;
 		r.status = "ko - " + ofToString(res.status) + " " + res.reasonForStatus;
 	}
 	ofNotifyEvent( gaResponse, r, this );
