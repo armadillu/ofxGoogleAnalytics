@@ -16,6 +16,7 @@
 #include "uriencode.h"
 
 #define UUID_FILENAME "UUID.txt"
+#define GA_MAX_REQUESTS_PER_SESSION	480
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 
 #define OFX_GA_CHECKS() if(!enabled) return;											\
@@ -124,6 +125,9 @@ class ofxGoogleAnalytics{
 		string lastUserScreen;
 
 		int requestCounter;
+		bool restartingSession;
+		vector<string> queuedRequests;
+
 		string customUserAgent;
 		string cachedUserAgent;
 
@@ -133,8 +137,8 @@ class ofxGoogleAnalytics{
 		map<int,string> customMetrics;
 
 		// utils
-		void endSession();
-		void startSession();
+		void endSession(bool restart = false);
+		void startSession(bool restart = false);
 
 		string basicQuery(AnalyticsHitType type);
 		string getNewUUID();
@@ -142,7 +146,7 @@ class ofxGoogleAnalytics{
 		string generateUUID();
 		string getUserAgent();
 
-		void sendRequest(string queryString, bool blocking = false);
+		void sendRequest(string queryString, bool blocking = false, bool regardless = false);
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */

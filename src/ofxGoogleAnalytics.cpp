@@ -16,6 +16,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	reportFrameRates = false;
 	reportFrameRatesInterval = 60;
 	cachedUserAgent = getUserAgent();
+	restartingSession = false;
 
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
@@ -76,11 +77,28 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	reportTime = ofGetElapsedTimef();
 }
 
+
 void ofxGoogleAnalytics::update(){
 
 	if(!enabled) return;
 
 	http->update();
+
+	if (restartingSession){
+		if (http->getPendingDownloads() == 0){ //hopefully session restart is through, start again
+			restartingSession = false;
+			requestCounter = 0;
+			ofLogVerbose("ofxGoogleAnalytics", "restarted user session");
+		}
+	}
+
+	//if we are up and running and we have queued requests, send one per second
+	//to hopefully slowly catch up
+	if (!restartingSession && queuedRequests.size() && ofGetFrameNum()%60 == 1){
+		sendRequest(queuedRequests[0], false, false);
+		queuedRequests.erase(queuedRequests.begin());
+	}
+
 	if (reportFrameRates){
 		if(ofGetElapsedTimef() - reportTime > reportFrameRatesInterval){
 			reportTime = ofGetElapsedTimef();
@@ -154,7 +172,7 @@ void ofxGoogleAnalytics::sendEvent(string category, string action, int value, st
 	string query = basicQuery(AnalyticsEvent);
 	query += "&ec=" + UriEncode(category);
 	query += "&ea=" + UriEncode(action);
-	if(lastUserScreen.size() > 0) query += "&cd=" + UriEncode(lastUserScreen);
+	//if(lastUserScreen.size() > 0) query += "&cd=" + UriEncode(lastUserScreen);
 	if (label.size()) query += "&el=" + UriEncode(label);
 	query += "&ev=" + ofToString(value);
 	sendRequest(query);
@@ -187,19 +205,23 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 }
 
 
-void ofxGoogleAnalytics::startSession(){
+void ofxGoogleAnalytics::startSession(bool restart){
 	string query = basicQuery(AnalyticsScreenView);
-	query += "&cd=" + UriEncode("Start ofxGoogleAnalytics");
+	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
 	query += "&sc=start";
-	sendRequest(query);
+	sendRequest(query,
+				false/*not blocking*/,
+				restart /*if its a restart, send regardless*/);
 }
 
 
-void ofxGoogleAnalytics::endSession(){
+void ofxGoogleAnalytics::endSession(bool restart){
 	string query = basicQuery(AnalyticsScreenView);
-	query += "&cd=" + UriEncode("End ofxGoogleAnalytics");
+	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";
-	sendRequest(query, true/*blocking*/);
+	sendRequest(query,
+				!restart/*blocking if we are ending for real*/,
+				restart /*if its a restart, send regardless*/);
 }
 
 
@@ -249,17 +271,34 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 }
 
 
-void ofxGoogleAnalytics::sendRequest(string queryString, bool blocking){
-	string randomize = "&z=" + ofToString((int)ofRandom(99999));
-	string sessionControl = "";
-	string url = GA_URL_ENDPOINT + queryString + randomize;
-	if (blocking){
-		ofxSimpleHttpResponse r = http->fetchURLBlocking(url);
-		r.print();
-	}else{
-		http->fetchURL(url, true);
+
+
+void ofxGoogleAnalytics::sendRequest(string queryString, bool blocking, bool regardless){
+
+	int requestLimimt = GA_MAX_REQUESTS_PER_SESSION;
+	if (requestCounter >= requestLimimt ){ //limit of 500 requests per session! restart session!
+
+		if (restartingSession == false){
+			restartingSession = true;
+			endSession(true); //if true(restart), will send regadless, so we overcome the block by #requestCounter
+			startSession(true);//idem
+		}
 	}
-	requestCounter++;
+
+	string randomize = "&z=" + ofToString((int)ofRandom(99999));
+	string url = GA_URL_ENDPOINT + queryString + randomize;
+
+	if (regardless || requestCounter < requestLimimt){
+		if (blocking){
+			ofxSimpleHttpResponse r = http->fetchURLBlocking(url);
+			r.print();
+		}else{
+			http->fetchURL(url, true);
+		}
+		requestCounter++;
+	}else{ //we are in the process of reopening a session, queue requests to send later when the
+		queuedRequests.push_back(queryString);
+	}
 }
 
 
