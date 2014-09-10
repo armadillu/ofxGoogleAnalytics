@@ -84,6 +84,8 @@ class ofxGoogleAnalytics{
 		void setUserID(string userName);
 		void setIP(string ipAddress);
 		void setRandomizeUUID(bool);
+		void setSendToGoogleInterval(float interval);	//how often can we contact google?
+														//used to throttle requests
 		//void setCustomMetric(int ID, string name, int value);
 
 		//if you want to be notified of ok / ko
@@ -109,6 +111,11 @@ class ofxGoogleAnalytics{
 			AnalyticsPageview
 		};
 
+		struct RequestQueueItem{
+			string queryString;
+			bool blocking;
+		};
+
 		AnalyticsConfig cfg;
 
 		// http response from ofxSimpleHttp
@@ -125,11 +132,13 @@ class ofxGoogleAnalytics{
 		float reportFrameRatesInterval; //in sec
 		float reportTime; //in sec
 
+		float time;
+		float sendInterval;
+
 		string lastUserScreen;
 
 		int requestCounter;
-		bool restartingSession;
-		vector<string> queuedRequests;
+		vector<RequestQueueItem> requestQueue;
 
 		string customUserAgent;
 		string cachedUserAgent;
@@ -149,7 +158,8 @@ class ofxGoogleAnalytics{
 		string generateUUID();
 		string getUserAgent();
 
-		void sendRequest(string queryString, bool blocking = false, bool regardless = false);
+		void enqueueRequest(string queryString, bool blocking = false);
+		void sendRequest(RequestQueueItem item);
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
