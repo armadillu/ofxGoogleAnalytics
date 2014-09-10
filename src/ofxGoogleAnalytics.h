@@ -83,6 +83,7 @@ class ofxGoogleAnalytics{
 		void setFramerateReportInterval(float sec);
 		void setUserID(string userName);
 		void setIP(string ipAddress);
+		void setRandomizeUUID(bool);
 		//void setCustomMetric(int ID, string name, int value);
 
 		//if you want to be notified of ok / ko
@@ -117,6 +118,8 @@ class ofxGoogleAnalytics{
 
 		bool enabled;
 		bool isSetup;
+
+		bool randomizeUUID;
 
 		bool reportFrameRates;
 		float reportFrameRatesInterval; //in sec

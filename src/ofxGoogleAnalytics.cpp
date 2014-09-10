@@ -17,6 +17,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	reportFrameRatesInterval = 60;
 	cachedUserAgent = getUserAgent();
 	restartingSession = false;
+	randomizeUUID = false;
 
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
@@ -138,6 +139,10 @@ void ofxGoogleAnalytics::setShouldReportFramerates(bool b){
 	reportFrameRates = b;
 }
 
+void ofxGoogleAnalytics::setRandomizeUUID(bool t){
+	randomizeUUID = t;
+	if(t) generateUUID();
+}
 
 void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 	reportFrameRatesInterval = sec;
@@ -206,6 +211,7 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 
 
 void ofxGoogleAnalytics::startSession(bool restart){
+	if(randomizeUUID) generateUUID();
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
 	query += "&sc=start";
