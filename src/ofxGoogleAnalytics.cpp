@@ -276,9 +276,9 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 	int requestLimimt = GA_MAX_REQUESTS_PER_SESSION;
 	if (requestCounter == requestLimimt ){ //limit of 500 requests per session! restart session!
+		requestCounter = 0;
 		endSession(true); //if true(restart), will send regadless, so we overcome the block by #requestCounter
 		startSession(true);//idem
-		requestCounter = 0;
 	}
 
 	RequestQueueItem item;
