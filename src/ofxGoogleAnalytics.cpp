@@ -108,7 +108,8 @@ void ofxGoogleAnalytics::update(){
 
 
 void ofxGoogleAnalytics::draw(int x, int y){
-	http->draw(x, y);
+	ofDrawBitmapString("ofxGoogleAnalytics: " + ofToString(requestQueue.size()) + " Queued Requests", x, y);
+	http->draw(x, y + 4);
 }
 
 
