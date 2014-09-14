@@ -7,8 +7,8 @@
 //
 // based on http://www.codeguru.com/cpp/cpp/algorithms/strings/article.php/c12759/URI-Encoding-and-Decoding.htm
 
-#ifndef ofxGoogleAnalytics_urlencode_h
-#define ofxGoogleAnalytics_urlencode_h
+#ifndef urlencode_h
+#define urlencode_h
 
 #include <iostream.h>
 

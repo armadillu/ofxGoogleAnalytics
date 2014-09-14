@@ -12,9 +12,12 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	requestCounter = 0;
 	isSetup = false;
+	enabled = true;
 	reportFrameRates = false;
 	reportFrameRatesInterval = 60;
+	sendInterval = 1.0; //dont send stuff to google any faster than this
 	cachedUserAgent = getUserAgent();
+	randomizeUUID = false;
 
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
@@ -31,14 +34,19 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	}else{
 		ofLogNotice() << "ofxGoogleAnalytics: Loaded UUID for this app: " << cfg.currentUUID << endl;
 	}
+	time = ofGetElapsedTimef();
 }
 
 
 ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	if(isSetup){
-		endSession();
+		endSession(false);
 		delete http;
 	}
+}
+
+void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
+	sendInterval = ofClamp(interval, 1.0, FLT_MAX);
 }
 
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
@@ -72,12 +80,24 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	cfg.appInstallerID = UriEncode(appInstallerID);
 
 	isSetup = true;
-	startSession();
+	startSession(false);
 	reportTime = ofGetElapsedTimef();
 }
 
+
 void ofxGoogleAnalytics::update(){
+
+	if(!enabled) return;
 	http->update();
+
+	if( ofGetElapsedTimef() - time > sendInterval){
+		time = ofGetElapsedTimef();
+		if (requestQueue.size()){
+			sendRequest(requestQueue[0]);
+			requestQueue.erase(requestQueue.begin());
+		}
+	}
+
 	if (reportFrameRates){
 		if(ofGetElapsedTimef() - reportTime > reportFrameRatesInterval){
 			reportTime = ofGetElapsedTimef();
@@ -85,6 +105,7 @@ void ofxGoogleAnalytics::update(){
 		}
 	}
 }
+
 
 void ofxGoogleAnalytics::draw(int x, int y){
 	http->draw(x, y);
@@ -117,6 +138,10 @@ void ofxGoogleAnalytics::setShouldReportFramerates(bool b){
 	reportFrameRates = b;
 }
 
+void ofxGoogleAnalytics::setRandomizeUUID(bool t){
+	randomizeUUID = t;
+	if(randomizeUUID) generateUUID();
+}
 
 void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 	reportFrameRatesInterval = sec;
@@ -124,73 +149,80 @@ void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 
 
 void ofxGoogleAnalytics::sendFrameRateReport(){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=AppTiming";
 	query += "&utv=FrameRate";
 	query += "&utt=" + UriEncode(ofToString((int)(ofGetFrameRate() * 1000)) ); //to seconds
 	query += "&ni=1";
-	sendRequest(query);
+	enqueueRequest(query);
 }
 
 void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string timingVariable,
 							   int timeInMs, string timingLabel){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=" + UriEncode(timingCategory);
 	query += "&utv=" + UriEncode(timingVariable);
 	query += "&utt=" + UriEncode(ofToString((int)(timeInMs)));
 	query += "&utl=" + UriEncode(timingLabel);
 	query += "&ni=1";
-	sendRequest(query);
+	enqueueRequest(query);
 }
 
 void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label){
 
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsEvent);
 	query += "&ec=" + UriEncode(category);
 	query += "&ea=" + UriEncode(action);
-	if(lastUserScreen.size() > 0) query += "&cd=" + UriEncode(lastUserScreen);
+	//if(lastUserScreen.size() > 0) query += "&cd=" + UriEncode(lastUserScreen);
 	if (label.size()) query += "&el=" + UriEncode(label);
 	query += "&ev=" + ofToString(value);
-	sendRequest(query);
+	enqueueRequest(query);
 }
 
 void ofxGoogleAnalytics::sendScreenView(string screenName){
+	OFX_GA_CHECKS();
 	lastUserScreen = screenName;
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&cd=" + UriEncode(screenName);
-	sendRequest(query);
+	enqueueRequest(query);
 }
 
 
 void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsPageview);
 	query += "&dp=" + UriEncode("/" + documentPath);
 	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
-	sendRequest(query);
+	enqueueRequest(query);
 }
 
 
 void ofxGoogleAnalytics::sendException(string description, bool fatal){
+	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsException);
 	query += "&exd=" + UriEncode(description);
 	query += "&exf=" + string(fatal ? "1" : "0");
-	sendRequest(query);
+	enqueueRequest(query);
 }
 
 
-void ofxGoogleAnalytics::startSession(){
+void ofxGoogleAnalytics::startSession(bool restart){
+	if(randomizeUUID) generateUUID();
 	string query = basicQuery(AnalyticsScreenView);
-	query += "&cd=" + UriEncode("Start ofxGoogleAnalytics");
+	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
 	query += "&sc=start";
-	sendRequest(query);
+	enqueueRequest(query, false/*blocking*/);
 }
 
 
-void ofxGoogleAnalytics::endSession(){
+void ofxGoogleAnalytics::endSession(bool restart){
 	string query = basicQuery(AnalyticsScreenView);
-	query += "&cd=" + UriEncode("End ofxGoogleAnalytics");
+	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";
-	sendRequest(query, true/*blocking*/);
+	enqueueRequest(query, !restart/*blocking*/);
 }
 
 
@@ -240,31 +272,57 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 }
 
 
-void ofxGoogleAnalytics::sendRequest(string queryString, bool blocking){
+
+void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
+
+	int requestLimimt = GA_MAX_REQUESTS_PER_SESSION;
+	if (requestCounter == requestLimimt ){ //limit of 500 requests per session! restart session!
+		requestCounter = 0;
+		endSession(true); //if true(restart), will send regadless, so we overcome the block by #requestCounter
+		startSession(true);//idem
+	}
+
+	RequestQueueItem item;
+	item.queryString = queryString;
+	item.blocking = blocking;
+
+	requestQueue.push_back(item);
+
+	requestCounter++;
+}
+
+
+void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
+
 	string randomize = "&z=" + ofToString((int)ofRandom(99999));
-	string sessionControl = "";
-	string url = GA_URL_ENDPOINT + queryString + randomize;
-	if (blocking){
+	string url = GA_URL_ENDPOINT + item.queryString + randomize;
+
+	if (item.blocking){
 		ofxSimpleHttpResponse r = http->fetchURLBlocking(url);
 		r.print();
 	}else{
 		http->fetchURL(url, true);
 	}
-	requestCounter++;
 }
 
 
 void ofxGoogleAnalytics::googleResponse(ofxSimpleHttpResponse &res){
 
-	res.print();
+	if(ofGetLogLevel() == OF_LOG_VERBOSE) {
+		res.print();
+	}
 	AnalyticsResponse r;
-	if (res.status < 300 && res.status > 200){
-		r.status = "ok - " + ofToString(res.status);;
+	r.httpStatus = res.status;
+	if (res.status < 300 && res.status >= 200){
+		r.ok = true;
+		r.status = "ok - " + ofToString(res.status);
 	}else{
-		r.status = "ko - " + ofToString(res.status);
+		r.ok = false;
+		r.status = "ko - " + ofToString(res.status) + " " + res.reasonForStatus;
 	}
 	ofNotifyEvent( gaResponse, r, this );
 }
+
 
 string ofxGoogleAnalytics::getUserAgent(){
 
@@ -314,10 +372,12 @@ string ofxGoogleAnalytics::loadUUID(){
 
 string ofxGoogleAnalytics::generateUUID(){
 	string UUID = getNewUUID();
-	ofstream myfile;
-	myfile.open(ofToDataPath(UUID_FILENAME, true).c_str());
-	myfile << UUID << "\n";
-	myfile.close();
+	if (!randomizeUUID){
+		ofstream myfile;
+		myfile.open(ofToDataPath(UUID_FILENAME, true).c_str());
+		myfile << UUID << "\n";
+		myfile.close();
+	}
 	return UUID;
 }
 

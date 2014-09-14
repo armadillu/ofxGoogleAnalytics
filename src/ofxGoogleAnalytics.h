@@ -16,15 +16,23 @@
 #include "uriencode.h"
 
 #define UUID_FILENAME "UUID.txt"
+#define GA_MAX_REQUESTS_PER_SESSION	480
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 
+#define OFX_GA_CHECKS() if(!enabled) return;											\
+						if(!isSetup){													\
+							ofLogError() <<	"ofxGoogleAnalytics: call setUp() first!";	\
+							return;														\
+						}
 
 class ofxGoogleAnalytics{
 
 	public:
 
 		struct AnalyticsResponse{
+			bool ok;
 			string status;
+			int httpStatus;
 		};
 
 		ofxGoogleAnalytics();
@@ -39,7 +47,7 @@ class ofxGoogleAnalytics{
 		void update();
 		void draw(int x, int y);
 
-
+		void setEnabled(bool enabled_){ enabled = enabled_;}
 
 		//these works for "App" type reports views
 		//where a "Screen" is the content unit.
@@ -75,6 +83,9 @@ class ofxGoogleAnalytics{
 		void setFramerateReportInterval(float sec);
 		void setUserID(string userName);
 		void setIP(string ipAddress);
+		void setRandomizeUUID(bool);
+		void setSendToGoogleInterval(float interval);	//how often can we contact google?
+														//used to throttle requests
 		//void setCustomMetric(int ID, string name, int value);
 
 		//if you want to be notified of ok / ko
@@ -100,6 +111,11 @@ class ofxGoogleAnalytics{
 			AnalyticsPageview
 		};
 
+		struct RequestQueueItem{
+			string queryString;
+			bool blocking;
+		};
+
 		AnalyticsConfig cfg;
 
 		// http response from ofxSimpleHttp
@@ -107,15 +123,23 @@ class ofxGoogleAnalytics{
 
 		ofxSimpleHttp * http;
 
+		bool enabled;
 		bool isSetup;
+
+		bool randomizeUUID;
 
 		bool reportFrameRates;
 		float reportFrameRatesInterval; //in sec
 		float reportTime; //in sec
 
+		float time;
+		float sendInterval;
+
 		string lastUserScreen;
 
 		int requestCounter;
+		vector<RequestQueueItem> requestQueue;
+
 		string customUserAgent;
 		string cachedUserAgent;
 
@@ -125,8 +149,8 @@ class ofxGoogleAnalytics{
 		map<int,string> customMetrics;
 
 		// utils
-		void endSession();
-		void startSession();
+		void endSession(bool restart = false);
+		void startSession(bool restart = false);
 
 		string basicQuery(AnalyticsHitType type);
 		string getNewUUID();
@@ -134,7 +158,8 @@ class ofxGoogleAnalytics{
 		string generateUUID();
 		string getUserAgent();
 
-		void sendRequest(string queryString, bool blocking = false);
+		void enqueueRequest(string queryString, bool blocking = false);
+		void sendRequest(RequestQueueItem item);
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
