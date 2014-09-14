@@ -53,7 +53,7 @@ void ofApp::draw(){
 	ofSetColor(200);
 	ofDrawBitmapString("Screen: " + ofToString(currentScreen) + "\n"
 					   "press 1-3 to report different screenViews\n"
-					   "press 4-6 to report Excpetions\n"
+					   "press 4-6 to report Exceptions\n"
 					   "press 7-9 to report Events\n"
 					   "press q,a,z to report PageViews\n"
 					   "press SPACEBAR to report a simple benchmark\n",

@@ -37,6 +37,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	if(isSetup){
 		endSession();
+		delete http;
 	}
 }
 
