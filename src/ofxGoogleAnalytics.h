@@ -81,9 +81,13 @@ class ofxGoogleAnalytics{
 		void setCustomUserAgent(string ua);
 		void setShouldReportFramerates(bool); //see "Behvaior/App Speed" in the GA web interface
 		void setFramerateReportInterval(float sec);
+
 		void setUserID(string userName);
+
 		void setIP(string ipAddress);
+
 		void setRandomizeUUID(bool);
+
 		void setSendToGoogleInterval(float interval);	//how often can we contact google?
 														//used to throttle requests
 		//void setCustomMetric(int ID, string name, int value);
