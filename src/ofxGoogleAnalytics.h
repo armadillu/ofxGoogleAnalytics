@@ -16,7 +16,7 @@
 #include "uriencode.h"
 
 #define UUID_FILENAME "UUID.txt"
-#define GA_MAX_REQUESTS_PER_SESSION	480
+#define GA_MAX_REQUESTS_PER_SESSION	100
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 
 #define OFX_GA_CHECKS() if(!enabled) return;											\

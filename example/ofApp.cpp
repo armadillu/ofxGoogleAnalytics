@@ -21,8 +21,8 @@ void ofApp::setup(){
 
 	ga->setShouldReportFramerates(true); //send timing tracking info
 	ga->setFramerateReportInterval(600); //every 60 sec, report app's framerate
-
-	ga->setUserID("armadillu"); //you can set a random user string for the GA session
+	ga->setRandomizeUUID(true);
+	//ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
 	//listen to ofxRemteUIClient events
 	ofAddListener(RUI_GET_OF_EVENT(), this, &ofApp::remoteUIClientDidSomething);
@@ -52,7 +52,7 @@ void ofApp::update(){
 	ga->update();
 	time += ofGetLastFrameTime();
 
-	if(time + timeRandomness > sendInterval){
+	if(time > sendInterval + timeRandomness){
 
 		if(sendScreenViews){
 			string currentScreenS = "Screen " + ofToString((int)ofRandom(10));
@@ -79,7 +79,7 @@ void ofApp::update(){
 		}
 
 		time = 0;
-		timeRandomness = ofRandom( -time * 0.2, time * 0.2);
+		timeRandomness = ofRandom( -sendInterval * 0.2, sendInterval * 0.2);
 	}
 }
 
@@ -103,7 +103,7 @@ void ofApp::draw(){
 					   "press SPACEBAR to report a simple benchmark\n",
 					   20, ofGetHeight() - 84);
 
-	ofDrawBitmapString( ofToString(time + timeRandomness, 1) + "/" + ofToString(sendInterval,1), 10, 20);
+	ofDrawBitmapString( ofToString(time, 1) + "/" + ofToString(sendInterval + timeRandomness,1), 10, 20);
 }
 
 
