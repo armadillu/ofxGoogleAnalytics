@@ -5,14 +5,12 @@ void ofApp::setup(){
 
 	ofBackground(22);
 	ofSetFrameRate(60);
-
+	ofSetVerticalSync(false);
 	currentScreen = 1;
-
 	ga = new ofxGoogleAnalytics();
 
 	//add listener to GoogleAnalytics, to get feedback
 	ofAddListener(ga->gaResponse, this, &ofApp::googleAnalyticsResponse);
-
 
 	ga->setup("UA-51706745-1",				//google track ID
 			 "ofxGoogleAnalyticsExample",	//app name
@@ -22,10 +20,25 @@ void ofApp::setup(){
 			 );
 
 	ga->setShouldReportFramerates(true); //send timing tracking info
-	ga->setFramerateReportInterval(5); //every 60 sec, report app's framerate
+	ga->setFramerateReportInterval(600); //every 60 sec, report app's framerate
 
 	ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
+	//listen to ofxRemteUIClient events
+	ofAddListener(RUI_GET_OF_EVENT(), this, &ofApp::remoteUIClientDidSomething);
+
+	RUI_SETUP();
+	RUI_SHARE_PARAM(sendScreenViews);
+	RUI_SHARE_PARAM(sendExceptions);
+	RUI_SHARE_PARAM(sendEvents);
+	RUI_SHARE_PARAM(sendFramerate);
+	RUI_SHARE_PARAM(sendInterval, 10, 300); //seconds
+
+	RUI_LOAD_FROM_XML();
+	ga->setEnabled(true);
+	ga->setShouldReportFramerates(sendFramerate);
+	time = 0;
+	TIME_SAMPLE_ENABLE();
 }
 
 //get feedback on our request
@@ -37,6 +50,37 @@ void ofApp::googleAnalyticsResponse(ofxGoogleAnalytics::AnalyticsResponse &r){
 void ofApp::update(){
 
 	ga->update();
+	time += ofGetLastFrameTime();
+
+	if(time + timeRandomness > sendInterval){
+
+		if(sendScreenViews){
+			string currentScreenS = "Screen " + ofToString((int)ofRandom(10));
+			ga->sendScreenView(ofToString(currentScreenS));
+		}
+
+		if(sendEvents){
+			string eventS = "Event " + ofToString((int)ofRandom(20));
+			string label = "Label " + ofToString((int)ofRandom(60));
+			int value = ofRandom(500);
+			ga->sendEvent("KeyboardEvent", eventS, value, label);
+		}
+
+		if(sendPage){
+			string level = "level" + ofToString((int)ofRandom(22));
+			string page = "page" + ofToString((int)ofRandom(5));
+			string pageTitle = "My Page " + ofToString((int)ofRandom(50));
+			ga->sendPageView("levels/" + level + "/" + page, pageTitle);
+		}
+
+		if(sendExceptions){
+			string exc = "Error " + ofToString((int)ofRandom(5000));
+			ga->sendException(exc, false);
+		}
+
+		time = 0;
+		timeRandomness = ofRandom( -time * 0.2, time * 0.2);
+	}
 }
 
 //--------------------------------------------------------------
@@ -48,7 +92,7 @@ void ofApp::draw(){
 	color.b = (currentScreen == 3 ? 60 : 0);
 	ofBackground(color);
 
-	ga->draw(30,30);
+	ga->draw(30,40);
 
 	ofSetColor(200);
 	ofDrawBitmapString("Screen: " + ofToString(currentScreen) + "\n"
@@ -58,6 +102,8 @@ void ofApp::draw(){
 					   "press q,a,z to report PageViews\n"
 					   "press SPACEBAR to report a simple benchmark\n",
 					   20, ofGetHeight() - 84);
+
+	ofDrawBitmapString( ofToString(time + timeRandomness, 1) + "/" + ofToString(sendInterval,1), 10, 20);
 }
 
 
@@ -102,7 +148,7 @@ void ofApp::keyReleased(int key){
 			//measure how long it takes to calc 9000000 sinf()'s
 			float t = ofGetElapsedTimef();
 			for(int i = 0; i < 9000000; i++){
-				float r = sinf(i);
+				float r = powf(i, 0.4);
 			}
 			t = ofGetElapsedTimef() - t;
 			//send that timing
@@ -110,6 +156,19 @@ void ofApp::keyReleased(int key){
 		}break;
 	}
 }
+
+
+//define a callback method to get notifications of client actions
+void ofApp::remoteUIClientDidSomething(RemoteUIServerCallBackArg &arg){
+	switch (arg.action) {
+		case CLIENT_UPDATED_PARAM:
+			ga->setShouldReportFramerates(sendFramerate);
+			break;
+		default:
+			break;
+	}
+}
+
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y){

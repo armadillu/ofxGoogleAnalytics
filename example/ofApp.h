@@ -2,7 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxGoogleAnalytics.h"
-
+#include "ofxRemoteUIServer.h"
+#include "ofxTimeMeasurements.h"
 
 class ofApp : public ofBaseApp{
 public:
@@ -28,4 +29,17 @@ public:
 	int currentScreen;
 
 	void googleAnalyticsResponse(ofxGoogleAnalytics::AnalyticsResponse &response);
+
+	void remoteUIClientDidSomething(RemoteUIServerCallBackArg & arg);
+
+	bool sendScreenViews;
+	bool sendExceptions;
+	bool sendEvents;
+	bool sendPage;
+	bool sendFramerate;
+
+	float time ;
+	float timeRandomness;
+
+	float sendInterval;
 };
