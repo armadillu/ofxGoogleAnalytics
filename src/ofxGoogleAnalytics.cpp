@@ -195,8 +195,9 @@ void ofxGoogleAnalytics::sendScreenView(string screenName){
 void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle){
 	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsPageview);
-	query += "&dp=" + UriEncode("/" + documentPath);
 	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
+	query += "&dp=" + UriEncode("/" + documentPath);
+
 	enqueueRequest(query);
 }
 
@@ -253,13 +254,13 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 
 	//q += "&sr=" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
-	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
-
-	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
-	"." + ofToString(ofGetVersionPatch());
-
-	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
-	q += "&fl=OF_" + ofVersion + "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
+//	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
+//
+//	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
+//	"." + ofToString(ofGetVersionPatch());
+//
+//	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
+//	q += "&fl=OF_" + ofVersion + "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 
 	if (cfg.appName.size()) q += "&an=" + cfg.appName;
 	if (cfg.appVersion.size()) q += "&av=" + cfg.appVersion;
@@ -286,6 +287,12 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	RequestQueueItem item;
 	item.queryString = queryString;
 	item.blocking = blocking;
+
+	string debugQuery = queryString;
+	for(int i = 0; i < debugQuery.size(); i++){
+		if(debugQuery[i] == '&') debugQuery[i] = '\n';
+	}
+	ofLog() << "-------------------------\n" << debugQuery << endl << endl;
 
 	requestQueue.push_back(item);
 
@@ -384,13 +391,16 @@ string ofxGoogleAnalytics::generateUUID(){
 
 
 string ofxGoogleAnalytics::getNewUUID(){
-    using kashmir::uuid_t;
-    using kashmir::system::DevRand;
-    DevRand devrandom;
-    uuid_t uuid;
-	devrandom >> uuid;
-	stringstream ss;
-	ss << uuid;
-	string s = ss.str();
+	static char alphabet[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','g'};
+	string s;
+	for(int i = 0; i < 8; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
+	s += "-";
+	for(int i = 0; i < 4; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
+	s += "-3";
+	for(int i = 0; i < 3; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
+	s += "-a";
+	for(int i = 0; i < 3; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
+	s += "-";
+	for(int i = 0; i < 12; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
 	return s;
 }

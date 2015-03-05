@@ -11,8 +11,6 @@
 
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
-#include "uuid.h"
-#include "devrand.h"
 #include "uriencode.h"
 
 #define UUID_FILENAME "UUID.txt"
