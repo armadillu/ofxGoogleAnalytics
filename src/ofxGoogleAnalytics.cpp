@@ -19,6 +19,8 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	cachedUserAgent = getUserAgent();
 	randomizeUUID = false;
 
+	maxRequestsPerSession = 100;
+
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
 	http->setUserAgent(cachedUserAgent);
@@ -89,9 +91,10 @@ void ofxGoogleAnalytics::update(){
 
 	if(!enabled) return;
 	http->update();
+	float now = ofGetElapsedTimef();
 
-	if( ofGetElapsedTimef() - time > sendInterval){
-		time = ofGetElapsedTimef();
+	if( now - time > sendInterval){
+		time = now;
 		if (requestQueue.size()){
 			sendRequest(requestQueue[0]);
 			requestQueue.erase(requestQueue.begin());
@@ -99,8 +102,8 @@ void ofxGoogleAnalytics::update(){
 	}
 
 	if (reportFrameRates){
-		if(ofGetElapsedTimef() - reportTime > reportFrameRatesInterval){
-			reportTime = ofGetElapsedTimef();
+		if(now - reportTime > reportFrameRatesInterval){
+			reportTime = now;
 			sendFrameRateReport();
 		}
 	}
@@ -212,6 +215,7 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 
 
 void ofxGoogleAnalytics::startSession(bool restart){
+	ofLogNotice("ofxGoogleAnalytics") << "startSession (restart: " << restart << ")";
 	if(randomizeUUID) generateUUID();
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
@@ -221,6 +225,7 @@ void ofxGoogleAnalytics::startSession(bool restart){
 
 
 void ofxGoogleAnalytics::endSession(bool restart){
+	ofLogNotice("ofxGoogleAnalytics") << "endSession (restart: " << restart << ")";
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";
@@ -277,11 +282,12 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 
 void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
-	int requestLimimt = ofRandom(GA_MAX_REQUESTS_PER_SESSION/2, GA_MAX_REQUESTS_PER_SESSION);
-	if (requestCounter == requestLimimt ){ //limit of 500 requests per session! restart session!
+	int requestLimimt = ofRandom(maxRequestsPerSession/2, maxRequestsPerSession);
+
+	if (requestCounter >= requestLimimt ){ //limit of 500 requests per session! restart session!
 		requestCounter = 0;
-		endSession(true); //if true(restart), will send regadless, so we overcome the block by #requestCounter
-		startSession(true);//idem
+		endSession(true); 	//if true(restart), will send regadless, so we overcome the block by #requestCounter
+		startSession(true);	//idem
 	}
 
 	RequestQueueItem item;
@@ -292,7 +298,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	for(int i = 0; i < debugQuery.size(); i++){
 		if(debugQuery[i] == '&') debugQuery[i] = '\n';
 	}
-	ofLog() << "-------------------------\n" << debugQuery << endl << endl;
+	ofLogNotice("ofxGoogleAnalytics") << "-------------------------\n" << debugQuery << endl << endl;
 
 	requestQueue.push_back(item);
 
@@ -302,7 +308,9 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 
-	string randomize = "&z=" + ofToString((int)ofRandom(99999));
+	ofLogNotice("ofxGoogleAnalytics") << "sendRequest";
+
+	string randomize = "&z=" + ofToString((int)ofRandom(99999999999));
 	string url = GA_URL_ENDPOINT + item.queryString + randomize;
 
 	if (item.blocking){
@@ -386,17 +394,18 @@ string ofxGoogleAnalytics::generateUUID(){
 		myfile << UUID << "\n";
 		myfile.close();
 	}
+	ofLogNotice("ofxGoogleAnalytics") << "Generating new UUID (" << UUID << ")";
 	return UUID;
 }
 
 
 string ofxGoogleAnalytics::getNewUUID(){
-	static char alphabet[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','g'};
+	static char alphabet[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 	string s;
 	for(int i = 0; i < 8; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
 	s += "-";
 	for(int i = 0; i < 4; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
-	s += "-3";
+	s += "-4";
 	for(int i = 0; i < 3; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
 	s += "-a";
 	for(int i = 0; i < 3; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);

@@ -14,7 +14,6 @@
 #include "uriencode.h"
 
 #define UUID_FILENAME "UUID.txt"
-#define GA_MAX_REQUESTS_PER_SESSION	100
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 
 #define OFX_GA_CHECKS() if(!enabled) return;											\
@@ -85,6 +84,7 @@ class ofxGoogleAnalytics{
 		void setIP(string ipAddress);
 
 		void setRandomizeUUID(bool);
+		void setMaxRequestsPerSession(int n){maxRequestsPerSession = n;};
 
 		void setSendToGoogleInterval(float interval);	//how often can we contact google?
 														//used to throttle requests
@@ -136,6 +136,8 @@ class ofxGoogleAnalytics{
 
 		float time;
 		float sendInterval;
+
+		int maxRequestsPerSession;
 
 		string lastUserScreen;
 

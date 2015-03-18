@@ -29,6 +29,7 @@ void ofApp::setup(){
 
 	RUI_SETUP();
 	RUI_SHARE_PARAM(sendScreenViews);
+	RUI_SHARE_PARAM(sendPage);
 	RUI_SHARE_PARAM(sendExceptions);
 	RUI_SHARE_PARAM(sendEvents);
 	RUI_SHARE_PARAM(sendFramerate);
@@ -43,7 +44,7 @@ void ofApp::setup(){
 
 //get feedback on our request
 void ofApp::googleAnalyticsResponse(ofxGoogleAnalytics::AnalyticsResponse &r){
-
+	ofLog() << "AnalyticsResponse: " << r.httpStatus << " - " << r.status;
 }
 
 //--------------------------------------------------------------
