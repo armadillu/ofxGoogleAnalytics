@@ -38,6 +38,8 @@ public:
 	bool sendPage;
 	bool sendFramerate;
 
+	bool randomizeUUID;
+
 	float time ;
 	float timeRandomness;
 

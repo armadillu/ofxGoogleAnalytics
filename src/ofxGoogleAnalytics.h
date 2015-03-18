@@ -147,9 +147,6 @@ class ofxGoogleAnalytics{
 		int requestCounter;
 		vector<RequestQueueItem> requestQueue;
 
-		string customUserAgent;
-		string cachedUserAgent;
-
 		string userID;
 		string ipAddress;
 

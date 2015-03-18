@@ -16,14 +16,13 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	reportFrameRates = false;
 	reportFrameRatesInterval = 60;
 	sendInterval = 1.0; //dont send stuff to google any faster than this
-	cachedUserAgent = getUserAgent();
 	randomizeUUID = false;
 
 	maxRequestsPerSession = 100;
 
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
-	http->setUserAgent(cachedUserAgent);
+	http->setUserAgent(getUserAgent());
 	http->setCancelCurrentDownloadOnDestruction(false);
 
 	//add download listener
@@ -133,8 +132,7 @@ void ofxGoogleAnalytics::setUserID(string userName){
 }
 
 void ofxGoogleAnalytics::setCustomUserAgent(string ua){
-	customUserAgent = UriEncode(ua);
-	http->setUserAgent(customUserAgent);
+	http->setUserAgent(ua);
 }
 
 void ofxGoogleAnalytics::setIP(string ipAddress_){
@@ -387,7 +385,7 @@ string ofxGoogleAnalytics::getUserAgent(){
 	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
 						"." + ofToString(ofGetVersionPatch());
 	string all = "ofxSimpleHttp/ofxGoogleAnalytics " + platS + " OpenFrameworks/" + ofVersion;
-	return UriEncode(all);
+	return (all);
 }
 
 string ofxGoogleAnalytics::loadUUID(){

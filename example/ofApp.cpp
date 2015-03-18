@@ -15,7 +15,6 @@ void ofApp::setup(){
 
 	ga->setShouldReportFramerates(true); //send timing tracking info
 	ga->setFramerateReportInterval(600); //every 60 sec, report app's framerate
-	ga->setRandomizeUUID(true);
 	ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
 	ga->setup("UA-51706745-1",				//google track ID
@@ -38,11 +37,14 @@ void ofApp::setup(){
 	RUI_SHARE_PARAM(sendInterval, 10, 300); //seconds
 	RUI_SHARE_PARAM(maxRequestsPerSession, 3, 500); //seconds
 	RUI_SHARE_PARAM(sendToGoogleRate, 0.01, 2); //seconds
+	RUI_SHARE_PARAM(randomizeUUID);
 
 
 	RUI_LOAD_FROM_XML();
 
 	ga->setEnabled(true);
+	ga->setCustomUserAgent("");
+	ga->setRandomizeUUID(randomizeUUID);
 	ga->setShouldReportFramerates(sendFramerate);
 	ga->setMaxRequestsPerSession(maxRequestsPerSession);
 	ga->setSendToGoogleInterval(sendToGoogleRate);
@@ -180,6 +182,9 @@ void ofApp::remoteUIClientDidSomething(RemoteUIServerCallBackArg &arg){
 			ga->setShouldReportFramerates(sendFramerate);
 			ga->setMaxRequestsPerSession(maxRequestsPerSession);
 			ga->setSendToGoogleInterval(sendToGoogleRate);
+			if (arg.paramName == "randomizeUUID"){
+				ga->setRandomizeUUID(arg.param.boolVal);
+			}
 			break;
 		default:
 			break;
