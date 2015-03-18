@@ -9,6 +9,7 @@ void ofApp::setup(){
 	currentScreen = 1;
 	ga = new ofxGoogleAnalytics();
 
+	ofxSimpleHttp::createSslContext();
 	//add listener to GoogleAnalytics, to get feedback
 	ofAddListener(ga->gaResponse, this, &ofApp::googleAnalyticsResponse);
 
@@ -123,6 +124,7 @@ void ofApp::draw(){
 void ofApp::exit(){
 	delete ga; //deleting the GA object closes the current session
 	ga = NULL;
+	ofxSimpleHttp::destroySslContext();
 }
 
 

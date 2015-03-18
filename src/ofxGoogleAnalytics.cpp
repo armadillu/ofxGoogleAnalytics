@@ -326,7 +326,7 @@ void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 
 	//ofLogNotice("ofxGoogleAnalytics") << "sendRequest";
 
-	string cacheBuster = "&z=" + ofToString((int)ofRandom(99999999999));
+	string cacheBuster = "&z=" + ofToString((int)ofRandom(0, 999999));
 	string url = GA_URL_ENDPOINT + item.queryString + cacheBuster;
 
 	if (item.blocking){

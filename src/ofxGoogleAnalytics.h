@@ -15,6 +15,8 @@
 
 #define UUID_FILENAME "UUID.txt"
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
+#define GA_DEBUG_URL_ENDPOINT "https://www.google-analytics.com/debug/collect?"
+
 
 #define OFX_GA_CHECKS() if(!enabled) return;											\
 						if(!isSetup){													\
