@@ -141,6 +141,17 @@ void ofApp::keyPressed(int key){
 	}
 }
 
+void ofApp::simpleBenchmark(){
+	//measure how long it takes to calc 9000000 sinf()'s
+	float a = 0;
+	float t = ofGetElapsedTimef();
+	for(int i = 0; i < 9000000; i++){
+		a += sinf(i * 0.1) ;
+	}
+	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	//send that timing
+	ga->sendCustomTimeMeasurement("SimpleBenchMark", "9000000xsinf()", t * 1000);
+}
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
@@ -162,14 +173,7 @@ void ofApp::keyReleased(int key){
 		case 'z': ga->sendPageView("keyboardKeys/row3/z", "my page for Z key"); break;
 
 		case ' ':{
-			//measure how long it takes to calc 9000000 sinf()'s
-			float t = ofGetElapsedTimef();
-			for(int i = 0; i < 9000000; i++){
-				float r = powf(i, 0.4);
-			}
-			t = ofGetElapsedTimef() - t;
-			//send that timing
-			ga->sendCustomTimeMeasurement("SimpleBenchMark", "9000000 sinf()", t * 1000);
+			simpleBenchmark();
 		}break;
 	}
 }
