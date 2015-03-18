@@ -12,6 +12,11 @@ void ofApp::setup(){
 	//add listener to GoogleAnalytics, to get feedback
 	ofAddListener(ga->gaResponse, this, &ofApp::googleAnalyticsResponse);
 
+	ga->setShouldReportFramerates(true); //send timing tracking info
+	ga->setFramerateReportInterval(600); //every 60 sec, report app's framerate
+	ga->setRandomizeUUID(true);
+	ga->setUserID("armadillu"); //you can set a random user string for the GA session
+
 	ga->setup("UA-51706745-1",				//google track ID
 			 "ofxGoogleAnalyticsExample",	//app name
 			 "0.1",							//app version
@@ -19,10 +24,6 @@ void ofApp::setup(){
 			 "myAppInstallerID"				//app installer id
 			 );
 
-	ga->setShouldReportFramerates(true); //send timing tracking info
-	ga->setFramerateReportInterval(600); //every 60 sec, report app's framerate
-	ga->setRandomizeUUID(true);
-	//ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
 	//listen to ofxRemteUIClient events
 	ofAddListener(RUI_GET_OF_EVENT(), this, &ofApp::remoteUIClientDidSomething);
@@ -34,17 +35,26 @@ void ofApp::setup(){
 	RUI_SHARE_PARAM(sendEvents);
 	RUI_SHARE_PARAM(sendFramerate);
 	RUI_SHARE_PARAM(sendInterval, 10, 300); //seconds
+	RUI_SHARE_PARAM(maxRequestsPerSession, 3, 500); //seconds
+	RUI_SHARE_PARAM(sendToGoogleRate, 0.01, 2); //seconds
+
 
 	RUI_LOAD_FROM_XML();
+
 	ga->setEnabled(true);
 	ga->setShouldReportFramerates(sendFramerate);
+	ga->setMaxRequestsPerSession(maxRequestsPerSession);
+	ga->setSendToGoogleInterval(sendToGoogleRate);
+
 	time = 0;
 	TIME_SAMPLE_ENABLE();
 }
 
 //get feedback on our request
 void ofApp::googleAnalyticsResponse(ofxGoogleAnalytics::AnalyticsResponse &r){
-	ofLog() << "AnalyticsResponse: " << r.httpStatus << " - " << r.status;
+	if(!r.ok){
+		ofLog() << "AnalyticsResponse: " << r.httpStatus << " - " << r.status;
+	}
 }
 
 //--------------------------------------------------------------
@@ -61,15 +71,17 @@ void ofApp::update(){
 		}
 
 		if(sendEvents){
-			string eventS = "Event " + ofToString((int)ofRandom(20));
-			string label = "Label " + ofToString((int)ofRandom(60));
-			int value = ofRandom(500);
-			ga->sendEvent("KeyboardEvent", eventS, value, label);
+			string eventCategory = "KeyboardEvent";
+			string eventAction = "Event " + ofToString((int)ofRandom(20));
+			string eventLabel = "Label " + ofToString((int)ofRandom(60));
+			int eventValue = ofRandom(500);
+			ga->sendEvent(eventCategory, eventAction, eventValue, eventLabel);
 		}
 
 		if(sendPage){
+			//this fakes an http like hierarchy for pages
 			string level = "level" + ofToString((int)ofRandom(22));
-			string page = "page" + ofToString((int)ofRandom(5));
+			string page = "page" + ofToString((int)ofRandom(10));
 			string pageTitle = "My Page " + ofToString((int)ofRandom(50));
 			ga->sendPageView("levels/" + level + "/" + page, pageTitle);
 		}
@@ -164,6 +176,8 @@ void ofApp::remoteUIClientDidSomething(RemoteUIServerCallBackArg &arg){
 	switch (arg.action) {
 		case CLIENT_UPDATED_PARAM:
 			ga->setShouldReportFramerates(sendFramerate);
+			ga->setMaxRequestsPerSession(maxRequestsPerSession);
+			ga->setSendToGoogleInterval(sendToGoogleRate);
 			break;
 		default:
 			break;

@@ -48,7 +48,7 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 }
 
 void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
-	sendInterval = ofClamp(interval, 1.0, FLT_MAX);
+	sendInterval = ofClamp(interval, 0.05, FLT_MAX);
 }
 
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
@@ -82,7 +82,7 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	cfg.appInstallerID = UriEncode(appInstallerID);
 
 	isSetup = true;
-	startSession(false);
+	startedFirstSession = false;
 	reportTime = ofGetElapsedTimef();
 }
 
@@ -111,8 +111,11 @@ void ofxGoogleAnalytics::update(){
 
 
 void ofxGoogleAnalytics::draw(int x, int y){
-	ofDrawBitmapString("ofxGoogleAnalytics: " + ofToString(requestQueue.size()) + " Queued Requests", x, y);
-	http->draw(x, y + 4);
+	string httpS = http->drawableString();
+	ofDrawBitmapString("ofxGoogleAnalytics: " + ofToString(requestQueue.size()) + " Queued Requests" +
+					   "\nRequestsThisSession: " + ofToString(requestCounter) + " / " +
+					   ofToString(maxRequestsPerSession) + "\n\n" +  httpS
+					   , x, y);
 }
 
 
@@ -135,7 +138,7 @@ void ofxGoogleAnalytics::setCustomUserAgent(string ua){
 }
 
 void ofxGoogleAnalytics::setIP(string ipAddress_){
-	ipAddress = UriEncode(ipAddress_);
+	ipAddress = ipAddress_;
 }
 
 void ofxGoogleAnalytics::setShouldReportFramerates(bool b){
@@ -157,7 +160,7 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=AppTiming";
 	query += "&utv=FrameRate";
-	query += "&utt=" + UriEncode(ofToString((int)(ofGetFrameRate() * 1000)) ); //to seconds
+	query += "&utt=" + ofToString((int)(ofGetFrameRate() * 1000)); //to milliseconds
 	query += "&ni=1";
 	enqueueRequest(query);
 }
@@ -200,7 +203,6 @@ void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle)
 	string query = basicQuery(AnalyticsPageview);
 	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
 	query += "&dp=" + UriEncode("/" + documentPath);
-
 	enqueueRequest(query);
 }
 
@@ -215,32 +217,38 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 
 
 void ofxGoogleAnalytics::startSession(bool restart){
-	ofLogNotice("ofxGoogleAnalytics") << "startSession (restart: " << restart << ")";
+	ofLogNotice("ofxGoogleAnalytics") << "🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏  Start Session  🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏";
 	if(randomizeUUID) generateUUID();
-	string query = basicQuery(AnalyticsScreenView);
+	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
 	query += "&sc=start";
+	if(restart){
+		query += "&ni=1";
+	}
 	enqueueRequest(query, false/*blocking*/);
 }
 
 
 void ofxGoogleAnalytics::endSession(bool restart){
-	ofLogNotice("ofxGoogleAnalytics") << "endSession (restart: " << restart << ")";
-	string query = basicQuery(AnalyticsScreenView);
+	ofLogNotice("ofxGoogleAnalytics") << "🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎 End Session 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎";
+	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";
+	if(restart){
+		query += "&ni=1";
+	}
 	enqueueRequest(query, !restart/*blocking*/);
 }
 
 
 string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 
-	string ua;
-	if (customUserAgent.size() > 0){
-		ua = customUserAgent;
-	}else{
-		ua = cachedUserAgent;
-	}
+//	string ua;
+//	if (customUserAgent.size() > 0){
+//		ua = customUserAgent;
+//	}else{
+//		ua = cachedUserAgent;
+//	}
 
 	string q;
 	q += "v=1";
@@ -255,17 +263,17 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 		case AnalyticsPageview: q+= "&t=pageview"; break;
 	}
 
+	//q += "&ds=app"; //data source (app|web)
 	//q += "&ua=" + ua; //User Agent now set at ofxSimplehttp level
-
 	//q += "&sr=" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
-//	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
-//
-//	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
-//	"." + ofToString(ofGetVersionPatch());
-//
-//	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
-//	q += "&fl=OF_" + ofVersion + "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
+	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
+
+	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
+	"." + ofToString(ofGetVersionPatch());
+
+	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
+	q += "&fl=OF_" + ofVersion ; //+ "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 
 	if (cfg.appName.size()) q += "&an=" + cfg.appName;
 	if (cfg.appVersion.size()) q += "&av=" + cfg.appVersion;
@@ -282,9 +290,17 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 
 void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
-	int requestLimimt = ofRandom(maxRequestsPerSession/2, maxRequestsPerSession);
+	if(!enabled){
+		ofLogError("ofxGoogleAnalytics") << "Can't do that, not enabled!";
+		return;
+	}
 
-	if (requestCounter >= requestLimimt ){ //limit of 500 requests per session! restart session!
+	if(!startedFirstSession){
+		startedFirstSession = true;
+		startSession(false);
+	}
+
+	if (requestCounter >= maxRequestsPerSession ){ //limit of 500 requests per session! restart session!
 		requestCounter = 0;
 		endSession(true); 	//if true(restart), will send regadless, so we overcome the block by #requestCounter
 		startSession(true);	//idem
@@ -298,7 +314,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	for(int i = 0; i < debugQuery.size(); i++){
 		if(debugQuery[i] == '&') debugQuery[i] = '\n';
 	}
-	ofLogNotice("ofxGoogleAnalytics") << "-------------------------\n" << debugQuery << endl << endl;
+	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
 
 	requestQueue.push_back(item);
 
@@ -308,13 +324,13 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 
-	ofLogNotice("ofxGoogleAnalytics") << "sendRequest";
+	//ofLogNotice("ofxGoogleAnalytics") << "sendRequest";
 
-	string randomize = "&z=" + ofToString((int)ofRandom(99999999999));
-	string url = GA_URL_ENDPOINT + item.queryString + randomize;
+	string cacheBuster = "&z=" + ofToString((int)ofRandom(99999999999));
+	string url = GA_URL_ENDPOINT + item.queryString + cacheBuster;
 
 	if (item.blocking){
-		ofxSimpleHttpResponse r = http->fetchURLBlocking(url);
+		ofxSimpleHttpResponse r = http->fetchURLBlocking(url); //happens now - blocks main thread?? really??
 		r.print();
 	}else{
 		http->fetchURL(url, true);

@@ -42,4 +42,6 @@ public:
 	float timeRandomness;
 
 	float sendInterval;
+	int maxRequestsPerSession;
+	float sendToGoogleRate;
 };

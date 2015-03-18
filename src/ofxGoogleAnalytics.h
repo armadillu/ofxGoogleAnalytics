@@ -75,7 +75,7 @@ class ofxGoogleAnalytics{
 		//and look in the "Behvaior/App Speed" section of he web interface
 		void sendCustomTimeMeasurement(string timingCategory, string timingVariable, int timeInMs, string timingLabel = "");
 
-		void setCustomUserAgent(string ua);
+		void setCustomUserAgent(string ua); //will be url encoded!
 		void setShouldReportFramerates(bool); //see "Behvaior/App Speed" in the GA web interface
 		void setFramerateReportInterval(float sec);
 
@@ -127,6 +127,7 @@ class ofxGoogleAnalytics{
 
 		bool enabled;
 		bool isSetup;
+		bool startedFirstSession;
 
 		bool randomizeUUID;
 
@@ -164,6 +165,7 @@ class ofxGoogleAnalytics{
 
 		void enqueueRequest(string queryString, bool blocking = false);
 		void sendRequest(RequestQueueItem item);
+
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
