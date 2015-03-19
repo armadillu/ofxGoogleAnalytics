@@ -54,7 +54,12 @@ class ofxGoogleAnalytics{
 		//which helps in apps with hierarchical organizations; see below
 		void sendScreenView(string screenName);
 		void sendException(string description, bool fatal);
-		void sendEvent(string category, string action, int value = 0, string label = "");
+		void sendEvent(string category,
+					   string action,
+					   int value = 0,
+					   string label = "",
+					   bool interactive = true
+					   );
 
 		//This works on "Web" type reports views
 		//you should go to "Admin", set Account and Property, and in View column choose
@@ -82,6 +87,7 @@ class ofxGoogleAnalytics{
 		void setFramerateReportInterval(float sec);
 
 		void setUserID(string userName);
+		void setSendSimpleBenchmarks(bool doBench);
 
 		void setIP(string ipAddress);
 
@@ -96,7 +102,6 @@ class ofxGoogleAnalytics{
 		ofEvent<AnalyticsResponse> gaResponse;
 
 	private:
-
 
 		struct AnalyticsConfig{
 			string trackingID;
@@ -140,6 +145,8 @@ class ofxGoogleAnalytics{
 		float time;
 		float sendInterval;
 
+		bool doBenchmarks;
+
 		int maxRequestsPerSession;
 
 		string lastUserScreen;
@@ -164,6 +171,17 @@ class ofxGoogleAnalytics{
 
 		void enqueueRequest(string queryString, bool blocking = false);
 		void sendRequest(RequestQueueItem item);
+
+		float simpleFloatBench();
+		float simpleIntegerBench();
+		float simpleSinCosBench();
+		float simpleSqrtBench();
+
+		string getComputerModel();
+		string getComputerCPU();
+		string getComputerGPU();
+
+		void reportHardware();
 
 };
 

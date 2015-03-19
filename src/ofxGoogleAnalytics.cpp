@@ -8,10 +8,18 @@
 
 #include "ofxGoogleAnalytics.h"
 
+#ifdef TARGET_OSX
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#import <IOKit/IOKitLib.h>
+#import <IOKit/Graphics/IOFrameBufferShared.h>
+#endif
+
 ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	requestCounter = 0;
 	isSetup = false;
+	doBenchmarks = true;
 	enabled = true;
 	reportFrameRates = false;
 	reportFrameRatesInterval = 60;
@@ -45,6 +53,12 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 		delete http;
 	}
 }
+
+
+void ofxGoogleAnalytics::setSendSimpleBenchmarks(bool d){
+	doBenchmarks = d;
+}
+
 
 void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
 	sendInterval = ofClamp(interval, 0.05, FLT_MAX);
@@ -83,6 +97,19 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	isSetup = true;
 	startedFirstSession = false;
 	reportTime = ofGetElapsedTimef();
+
+	if(doBenchmarks){
+		//time some basic operations, send to google to compare HW performance
+		float floatB = simpleFloatBench();
+		float intB = simpleIntegerBench();
+		float sinB = simpleSinCosBench();
+		float sqrtB = simpleSqrtBench();
+
+		sendCustomTimeMeasurement("BenchMark", "FloatMathBench", floatB * 1000);
+		sendCustomTimeMeasurement("BenchMark", "IntegerMathBench", intB * 1000);
+		sendCustomTimeMeasurement("BenchMark", "SinCosBench", sinB * 1000);
+		sendCustomTimeMeasurement("BenchMark", "SqrtBench", sqrtB * 1000);
+	}
 }
 
 
@@ -156,7 +183,7 @@ void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 void ofxGoogleAnalytics::sendFrameRateReport(){
 	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
-	query += "&utc=AppTiming";
+	query += "&utc=AppTimings";
 	query += "&utv=FrameRate";
 	query += "&utt=" + ofToString((int)(ofGetFrameRate() * 1000)); //to milliseconds
 	query += "&ni=1";
@@ -175,15 +202,15 @@ void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string
 	enqueueRequest(query);
 }
 
-void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label){
+void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label, bool interactive ){
 
 	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsEvent);
 	query += "&ec=" + UriEncode(category);
-	query += "&ea=" + UriEncode(action);
-	//if(lastUserScreen.size() > 0) query += "&cd=" + UriEncode(lastUserScreen);
+	if (action.size()) query += "&ea=" + UriEncode(action);
 	if (label.size()) query += "&el=" + UriEncode(label);
 	query += "&ev=" + ofToString(value);
+	query += "&ni=" + string(interactive ? "0" : "1");
 	enqueueRequest(query);
 }
 
@@ -215,7 +242,7 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 
 
 void ofxGoogleAnalytics::startSession(bool restart){
-	ofLogNotice("ofxGoogleAnalytics") << "🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏  Start Session  🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏";
+	//ofLogNotice("ofxGoogleAnalytics") << "🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏  Start Session  🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏";
 	if(randomizeUUID) generateUUID();
 	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
@@ -228,7 +255,7 @@ void ofxGoogleAnalytics::startSession(bool restart){
 
 
 void ofxGoogleAnalytics::endSession(bool restart){
-	ofLogNotice("ofxGoogleAnalytics") << "🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎 End Session 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎";
+	//ofLogNotice("ofxGoogleAnalytics") << "🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎 End Session 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎";
 	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";
@@ -267,11 +294,10 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
 	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
 
-	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
-	"." + ofToString(ofGetVersionPatch());
-
+	string ofVersion = ofGetVersionInfo();
+	ofStringReplace(ofVersion, "\n", "");
 	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
-	q += "&fl=OF_" + ofVersion ; //+ "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
+	q += "&fl=OF_" + ofVersion; //+ "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 
 	if (cfg.appName.size()) q += "&an=" + cfg.appName;
 	if (cfg.appVersion.size()) q += "&av=" + cfg.appVersion;
@@ -284,6 +310,66 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	return q;
 }
 
+string ofxGoogleAnalytics::getComputerModel(){
+
+	#ifdef TARGET_OSX
+	size_t len = 0;
+	::sysctlbyname("hw.model", NULL, &len, NULL, 0);
+	std::string model(len-1, '\0');
+	::sysctlbyname("hw.model", const_cast<char *>(model.data()), &len, NULL, 0);
+	return model;
+	#endif
+	return "Unknown Model";
+}
+
+string ofxGoogleAnalytics::getComputerCPU(){
+	#ifdef TARGET_OSX
+	size_t len = 0;
+	::sysctlbyname("machdep.cpu.brand_string", NULL, &len, NULL, 0);
+	std::string cpu(len-1, '\0');
+	::sysctlbyname("machdep.cpu.brand_string", const_cast<char *>(cpu.data()), &len, NULL, 0);
+	return cpu;
+	#endif
+	return "Unknown CPU";
+}
+
+string ofxGoogleAnalytics::getComputerGPU(){
+	#ifdef TARGET_OSX
+	string GPU = ofSystem("ioreg -rd1 -c IOPCIDevice  -k 'model'");
+	ofBuffer b = ofBuffer(GPU);
+	b.resetLineReader();
+	while(!b.isLastLine()){
+		string l = b.getNextLine();
+		if(ofIsStringInString(l, "model")){
+			vector<string>split = ofSplitString(l, "\"", true, true );
+			if(split.size() > 2) return split[2];
+			break;
+		}
+	}
+	#endif
+	return "Unknown GPU";
+}
+
+void ofxGoogleAnalytics::reportHardware(){
+	//send hw info as an event
+	string cpu = getComputerCPU();
+	if(cpu.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my CPU '" << cpu << "'";
+		sendEvent("Hardware", "CPU", 0, cpu, false);
+	}
+
+	string model = getComputerModel();
+	if(model.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer Model '" << model << "'";
+		sendEvent("Hardware", "Computer Model", 0, model, false);
+	}
+
+	string GPU = getComputerGPU();
+	if(GPU.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer GPU '" << GPU << "'";
+		sendEvent("Hardware", "Computer GPU", 0, GPU, false);
+	}
+}
 
 
 void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
@@ -296,6 +382,9 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	if(!startedFirstSession){
 		startedFirstSession = true;
 		startSession(false);
+
+		//send hw info as an event
+		reportHardware();
 	}
 
 	if (requestCounter >= maxRequestsPerSession ){ //limit of 500 requests per session! restart session!
@@ -308,16 +397,17 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	item.queryString = queryString;
 	item.blocking = blocking;
 
-	string debugQuery = queryString;
-	for(int i = 0; i < debugQuery.size(); i++){
-		if(debugQuery[i] == '&') debugQuery[i] = '\n';
-	}
-	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
+//	string debugQuery = queryString;
+//	for(int i = 0; i < debugQuery.size(); i++){
+//		if(debugQuery[i] == '&') debugQuery[i] = '\n';
+//	}
+//	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
 
 	requestQueue.push_back(item);
 
 	requestCounter++;
 }
+
 
 
 void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
@@ -368,7 +458,7 @@ string ofxGoogleAnalytics::getUserAgent(){
 			Gestalt(gestaltSystemVersionMinor, &minor);
 
 			platS = "(Macintosh; Intel Mac OS X " + ofToString(major) + "_" +
-					ofToString(minor) + "_" + ofToString(bugfix) + ")";
+					ofToString(minor) + "_" + ofToString(bugfix) + ") ";
 			#endif
 			}break;
 		case OF_TARGET_WINGCC: platS = "(Windows; GCC)"; break;
@@ -410,6 +500,49 @@ string ofxGoogleAnalytics::generateUUID(){
 	}
 	ofLogNotice("ofxGoogleAnalytics") << "Generating new UUID (" << UUID << ")";
 	return UUID;
+}
+
+float ofxGoogleAnalytics::simpleFloatBench(){
+	float a = 0;
+	float t = ofGetElapsedTimef();
+	for(int i = 0; i < 99999999; i++){
+		a = (2.0f + (i * 0.1f)) / (i * 0.5f + 2.0f - 1.0f) ;
+	}
+	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	return t;
+}
+
+float ofxGoogleAnalytics::simpleIntegerBench(){
+
+	//measure how long it takes to calc 999999 common int operations
+	int a = 0;
+	float t = ofGetElapsedTimef();
+	for(int i = 0; i < 9999999; i++){
+		a = (((a + i) * 3 ) / (1 + a * 2) ) / 2 - 1;
+	}
+	t = ofGetElapsedTimef() - t + float(a - a); //overcome compiler optimizations
+	return t;
+}
+
+
+float ofxGoogleAnalytics::simpleSinCosBench(){
+	float a = 0;
+	float t = ofGetElapsedTimef();
+	for(int i = 0; i < 9999999; i++){
+		a = (2.0f + sinf(i * 0.1f - 0.3f)) / (cosf(i * 0.5f + 2.0f) + 2.0f) ;
+	}
+	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	return t;
+}
+
+float ofxGoogleAnalytics::simpleSqrtBench(){
+	float a = 0;
+	float t = ofGetElapsedTimef();
+	for(int i = 0; i < 9999999; i++){
+		a = (2.0f + powf(i * 0.1f, 1.1f)) / (sqrtf(i * 0.5f + 2.0f) - 1.0f) ;
+	}
+	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	return t;
 }
 
 

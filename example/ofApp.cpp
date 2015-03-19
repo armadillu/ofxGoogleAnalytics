@@ -90,7 +90,7 @@ void ofApp::update(){
 		}
 
 		if(sendExceptions){
-			string exc = "Error " + ofToString((int)ofRandom(5000));
+			string exc = "Error " + ofToString((int)ofRandom(100));
 			ga->sendException(exc, false);
 		}
 
