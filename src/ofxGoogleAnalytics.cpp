@@ -361,13 +361,13 @@ void ofxGoogleAnalytics::reportHardware(){
 	string model = getComputerModel();
 	if(model.size()){
 		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer Model '" << model << "'";
-		sendEvent("Hardware", "Computer Model", 0, model, false);
+		sendEvent("Hardware", "Model", 0, model, false);
 	}
 
 	string GPU = getComputerGPU();
 	if(GPU.size()){
 		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer GPU '" << GPU << "'";
-		sendEvent("Hardware", "Computer GPU", 0, GPU, false);
+		sendEvent("Hardware", "GPU", 0, GPU, false);
 	}
 }
 
