@@ -44,6 +44,13 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 		ofLogNotice() << "ofxGoogleAnalytics: Loaded UUID for this app: " << cfg.currentUUID << endl;
 	}
 	time = ofGetElapsedTimef();
+
+	//HW thingies
+	gpuName = getComputerGPU();
+	cpuName = getComputerCPU();
+	modelName = getComputerModel();
+	ofVersion = ofGetVersionInfo();
+	ofStringReplace(ofVersion, "\n", "");;
 }
 
 
@@ -145,14 +152,34 @@ void ofxGoogleAnalytics::draw(int x, int y){
 }
 
 
-//void ofxGoogleAnalytics::setCustomMetric(int ID, string name, int value){
-//	if (ID < 20 && ID >= 0){
-//		customMetrics[ID] = name;
-//	}else{
-//		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
-//		ofLogError() << "metric ID's should be between 0 and 20";
-//	}
-//}
+void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
+	if (ID < 20 && ID >= 0){
+		OFX_GA_CHECKS();
+		string query = basicQuery(AnalyticsTiming);
+		query += "&cm<" + ofToString(ID)+ ">=" + ofToString(value);
+		enqueueRequest(query);
+	}else{
+		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
+		ofLogError("ofxGoogleAnalytics") << "metric ID's should be between 0 and 20";
+	}
+}
+
+void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
+	if (ID < 20 && ID >= 3){
+		sendCustomDimensionInternal(ID, value);
+	}else{
+		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
+		ofLogError("ofxGoogleAnalytics") << "Dimension ID's should be between 4 and 20 - 0..3 are used by the addon.";
+	}
+}
+
+void ofxGoogleAnalytics::sendCustomDimensionInternal(int ID, string value){
+	OFX_GA_CHECKS();
+	string query = basicQuery(AnalyticsTiming);
+	query += "&cd<" + ofToString(ID)+ ">=" + UriEncode(value);
+	enqueueRequest(query);
+}
+
 
 void ofxGoogleAnalytics::setUserID(string userName){
 	userID = UriEncode(userName);
@@ -292,11 +319,9 @@ string ofxGoogleAnalytics::basicQuery(AnalyticsHitType type){
 	//q += "&ua=" + ua; //User Agent now set at ofxSimplehttp level
 	//q += "&sr=" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 	//q += "&vp=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight()); //viewport not viewable in reports?
-	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
 
-	string ofVersion = ofGetVersionInfo();
-	ofStringReplace(ofVersion, "\n", "");
-	//sneak in OF version and screen size into the flash version field, not sure if it will show in the analytics app report
+	q += "&sr=" + ofToString((int)ofGetWidth()) + "x" + ofToString((int)ofGetHeight());
+	//sneak in OF version and screen size into the flash version field
 	q += "&fl=OF_" + ofVersion; //+ "%20" + ofToString((int)ofGetScreenWidth()) + "x" + ofToString((int)ofGetScreenHeight());
 
 	if (cfg.appName.size()) q += "&an=" + cfg.appName;
@@ -350,24 +375,27 @@ string ofxGoogleAnalytics::getComputerGPU(){
 	return "Unknown GPU";
 }
 
-void ofxGoogleAnalytics::reportHardware(){
+void ofxGoogleAnalytics::reportHardwareAsEvent(){
+
 	//send hw info as an event
-	string cpu = getComputerCPU();
-	if(cpu.size()){
-		ofLogNotice("ofxGoogleAnalytics") << "Reporting my CPU '" << cpu << "'";
-		sendEvent("Hardware", "CPU", 0, cpu, false);
+	if(cpuName.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my CPU '" << cpuName << "'";
+		sendEvent("Hardware", "CPU", 0, cpuName, false);
 	}
 
-	string model = getComputerModel();
-	if(model.size()){
-		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer Model '" << model << "'";
-		sendEvent("Hardware", "Model", 0, model, false);
+	if(modelName.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer Model '" << modelName << "'";
+		sendEvent("Hardware", "Model", 0, modelName, false);
 	}
 
-	string GPU = getComputerGPU();
-	if(GPU.size()){
-		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer GPU '" << GPU << "'";
-		sendEvent("Hardware", "GPU", 0, GPU, false);
+	if(gpuName.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my Computer GPU '" << gpuName << "'";
+		sendEvent("Hardware", "GPU", 0, gpuName, false);
+	}
+
+	if(ofVersion.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my OF version '" << ofVersion << "'";
+		sendEvent("Software", "OF Version", 0, ofVersion, false);
 	}
 }
 
@@ -384,7 +412,11 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		startSession(false);
 
 		//send hw info as an event
-		reportHardware();
+		reportHardwareAsEvent();
+		sendCustomDimensionInternal(0, ofVersion);
+		sendCustomDimensionInternal(1, cpuName);
+		sendCustomDimensionInternal(2, gpuName);
+		sendCustomDimensionInternal(3, modelName);
 	}
 
 	if (requestCounter >= maxRequestsPerSession ){ //limit of 500 requests per session! restart session!

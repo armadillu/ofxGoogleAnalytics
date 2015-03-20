@@ -96,7 +96,24 @@ class ofxGoogleAnalytics{
 
 		void setSendToGoogleInterval(float interval);	//how often can we contact google?
 														//used to throttle requests
-		//void setCustomMetric(int ID, string name, int value);
+
+		//you address those by ID [0..20]
+		//you must assign a name to each ID key from the Google Analytics admin interface
+		//(Custom Definitions)
+		//https://developers.google.com/analytics/devguides/platform/customdimsmets
+		void sendCustomMetric(int metricID/*0..20*/, float value);
+
+		//0..4 are auto filled in by the addon, reporting
+		//
+		//	0	OpenFrameworks Verision
+		//	1	CPU
+		//	2	GPU
+		//	3	Computer Model
+		//YOU MUST SETUP THIS in your google analytics account
+		// https://farm8.staticflickr.com/7648/16874457272_9bb0d95d1b_o_d.png
+
+		void sendCustomDimension(int dimensionID/*0..20*/, string value);
+
 
 		//if you want to be notified of ok / ko
 		ofEvent<AnalyticsResponse> gaResponse;
@@ -130,6 +147,8 @@ class ofxGoogleAnalytics{
 		// http response from ofxSimpleHttp
 		void googleResponse(ofxSimpleHttpResponse &response);
 
+
+		void sendCustomDimensionInternal(int dimensionID/*0..20*/, string value);
 		ofxSimpleHttp * http;
 
 		bool enabled;
@@ -157,8 +176,6 @@ class ofxGoogleAnalytics{
 		string userID;
 		string ipAddress;
 
-		map<int,string> customMetrics;
-
 		// utils
 		void endSession(bool restart = false);
 		void startSession(bool restart = false);
@@ -181,8 +198,13 @@ class ofxGoogleAnalytics{
 		string getComputerCPU();
 		string getComputerGPU();
 
-		void reportHardware();
+		void reportHardwareAsEvent();
 
+		// unique to this computer
+		string gpuName;
+		string cpuName;
+		string modelName;
+		string ofVersion;
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
