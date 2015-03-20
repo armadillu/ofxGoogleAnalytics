@@ -429,11 +429,11 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	item.queryString = queryString;
 	item.blocking = blocking;
 
-	string debugQuery = queryString;
-	for(int i = 0; i < debugQuery.size(); i++){
-		if(debugQuery[i] == '&') debugQuery[i] = '\n';
-	}
-	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
+//	string debugQuery = queryString;
+//	for(int i = 0; i < debugQuery.size(); i++){
+//		if(debugQuery[i] == '&') debugQuery[i] = '\n';
+//	}
+//	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
 
 	requestQueue.push_back(item);
 
@@ -449,7 +449,7 @@ void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 	string cacheBuster = "&z=" + ofToString((int)ofRandom(0, 999999));
 	string url = GA_URL_ENDPOINT + item.queryString + cacheBuster;
 
-	cout << url << endl;
+	//cout << url << endl;
 
 	if (item.blocking){
 		ofxSimpleHttpResponse r = http->fetchURLBlocking(url); //happens now - blocks main thread?? really??
