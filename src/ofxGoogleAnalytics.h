@@ -77,14 +77,14 @@ class ofxGoogleAnalytics{
 
 		//manually send it whenever you want, or schedule it with setShouldReportFramerates
 		void sendFrameRateReport(); //see results in GA website in "Behvaior/App Speed"
+		void setShouldReportFramerates(bool); //see "Behvaior/App Speed" in the GA web interface
+		void setFramerateReportInterval(float sec);
 
 		//if you want to time different parts of your code and report that, you can do this here
 		//and look in the "Behvaior/App Speed" section of he web interface
 		void sendCustomTimeMeasurement(string timingCategory, string timingVariable, int timeInMs, string timingLabel = "");
 
 		void setCustomUserAgent(string ua); //will be url encoded!
-		void setShouldReportFramerates(bool); //see "Behvaior/App Speed" in the GA web interface
-		void setFramerateReportInterval(float sec);
 
 		void setUserID(string userName);
 		void setSendSimpleBenchmarks(bool doBench);

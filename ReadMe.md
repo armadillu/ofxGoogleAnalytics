@@ -39,12 +39,22 @@ It requires [ofxSimpleHttp](https://github.com/armadillu/ofxSimpleHttp).
 
 Made following Google's "[Measurement Protocol Developer Guide](https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide)".
 
-It creates an unique UUID the first time that's launched, and it stores it in "data/UUID.txt" so that you can uniquely identify a unique app/installation instance across sessions.
+It creates an unique UUID the first time that's launched, and it stores it in "data/UUID.txt" so that you can uniquely identify a unique app/installation instance across sessions. You can also choose to randomize the UUID per every session (you can also specify how often sessions are restarted).
 
 All the requests are threaded in a single queue so they should not affect your app performance. But the last request does: destructing the ofxGoogleAnalytics holds the main thread for a long as it takes to send the last google request signaling end of a Session.
 
-It tries to report as much as possible: platform, screen size and window size. It will try its best to append "debug" or "release" into the supplied app version.
+It tries to report as much as possible: platform, screen size and window size. It will try its best to append "debug" or "release" into the supplied app version. It will also sneak the Open Frameworks version in the "flash version" field.
 
-The tracking works for a few days, and then it stops registering... It work in the "Realtime" view. but then its somehow discarded by google. I am currently trying different things to fix this. A session can only hold 500 actions, so I'm closing and opening a new sessions after 500 requests. I am also testing a new random userID for every app launch, just in case. I'm also queueing the requests and sending them staggered at a specified interval to avoid overwhelming google. This is hard to test bc it only starts ignoring the events after a 2-3 days of good tracking. Any ideas appreciated!
+It can also periodically report the framerate of the app, as a timing event. You can look in the "App Speed" section under "Behavior" in the Google Analytics website. You can enable/disable that feature, and also set how often you want to send those framerate reports. Look into setShouldReportFramerates() & co.
+
+You should define your first 4 Custom Dimensions like this
+
+![](https://farm8.staticflickr.com/7648/16874457272_9bb0d95d1b_o_d.png)
+
+And then you will be able to segment your hits by CPU, GPU, OpenFrameworks version and computer model. Those values are gathered when you first instantiate ofxGoogleAnalytics, and the parsing is only implemented on Mac OS X for now.
+
+It will also, by default, send simple computer benchmarks, by measuring how long it takes for the computer to process several arithmetic tasks. Those tasks are ran once, when you instantiate the ofxGoogleAnalytics object. There are four benchmark sections, integer arithmetics, float arithmetics, sin() performance, and sqrt() performance. You can disable the benchmarks by calling setSendSimpleBenchmarks(false) before setting up the object. To see the reports on the GA website, navigate to Behavior:AppSpeed:BenchMark. If you set up the Dimensions as stated above, you should be able to segment all traffic by 
+
+
 
 
