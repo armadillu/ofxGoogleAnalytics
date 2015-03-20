@@ -94,7 +94,7 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 			#endif
 		#else
 			//!osx && !win
-			cfg.appVersion = UriEncode(appVersion );
+			cfg.appVersion = UriEncode(appVersion);
 		#endif
 	#endif
 
@@ -153,10 +153,10 @@ void ofxGoogleAnalytics::draw(int x, int y){
 
 
 void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
-	if (ID < 20 && ID >= 0){
+	if (ID <= 20 && ID > 4){
 		OFX_GA_CHECKS();
 		string query = basicQuery(AnalyticsTiming);
-		query += "&cm<" + ofToString(ID)+ ">=" + ofToString(value);
+		query += "&cm" + ofToString(ID)+ "=" + ofToString(value);
 		enqueueRequest(query);
 	}else{
 		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
@@ -165,7 +165,7 @@ void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
 }
 
 void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
-	if (ID < 20 && ID >= 3){
+	if (ID <= 20 && ID > 4){
 		sendCustomDimensionInternal(ID, value);
 	}else{
 		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
@@ -176,7 +176,7 @@ void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
 void ofxGoogleAnalytics::sendCustomDimensionInternal(int ID, string value){
 	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
-	query += "&cd<" + ofToString(ID)+ ">=" + UriEncode(value);
+	query += "&cd" + ofToString(ID)+ "=" + UriEncode(value);
 	enqueueRequest(query);
 }
 
@@ -413,10 +413,10 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 		//send hw info as an event
 		reportHardwareAsEvent();
-		sendCustomDimensionInternal(0, ofVersion);
-		sendCustomDimensionInternal(1, cpuName);
-		sendCustomDimensionInternal(2, gpuName);
-		sendCustomDimensionInternal(3, modelName);
+		sendCustomDimensionInternal(1, ofVersion);
+		sendCustomDimensionInternal(2, cpuName);
+		sendCustomDimensionInternal(3, gpuName);
+		sendCustomDimensionInternal(4, modelName);
 	}
 
 	if (requestCounter >= maxRequestsPerSession ){ //limit of 500 requests per session! restart session!
@@ -429,11 +429,11 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	item.queryString = queryString;
 	item.blocking = blocking;
 
-//	string debugQuery = queryString;
-//	for(int i = 0; i < debugQuery.size(); i++){
-//		if(debugQuery[i] == '&') debugQuery[i] = '\n';
-//	}
-//	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
+	string debugQuery = queryString;
+	for(int i = 0; i < debugQuery.size(); i++){
+		if(debugQuery[i] == '&') debugQuery[i] = '\n';
+	}
+	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
 
 	requestQueue.push_back(item);
 
@@ -448,6 +448,8 @@ void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 
 	string cacheBuster = "&z=" + ofToString((int)ofRandom(0, 999999));
 	string url = GA_URL_ENDPOINT + item.queryString + cacheBuster;
+
+	cout << url << endl;
 
 	if (item.blocking){
 		ofxSimpleHttpResponse r = http->fetchURLBlocking(url); //happens now - blocks main thread?? really??

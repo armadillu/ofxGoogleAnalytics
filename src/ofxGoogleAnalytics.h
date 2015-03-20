@@ -101,18 +101,18 @@ class ofxGoogleAnalytics{
 		//you must assign a name to each ID key from the Google Analytics admin interface
 		//(Custom Definitions)
 		//https://developers.google.com/analytics/devguides/platform/customdimsmets
-		void sendCustomMetric(int metricID/*0..20*/, float value);
+		void sendCustomMetric(int metricID/*1..20*/, float value);
 
-		//0..4 are auto filled in by the addon, reporting
+		//1..4 are auto filled in by the addon, reporting
 		//
-		//	0	OpenFrameworks Verision
-		//	1	CPU
-		//	2	GPU
-		//	3	Computer Model
+		//	1	OpenFrameworks Version
+		//	2	CPU
+		//	3	GPU
+		//	4	Computer Model
 		//YOU MUST SETUP THIS in your google analytics account
 		// https://farm8.staticflickr.com/7648/16874457272_9bb0d95d1b_o_d.png
 
-		void sendCustomDimension(int dimensionID/*0..20*/, string value);
+		void sendCustomDimension(int dimensionID/*1..20*/, string value);
 
 
 		//if you want to be notified of ok / ko
