@@ -7,9 +7,11 @@ void ofApp::setup(){
 	ofSetFrameRate(60);
 	ofSetVerticalSync(false);
 	currentScreen = 1;
+
 	ga = new ofxGoogleAnalytics();
 
 	ofxSimpleHttp::createSslContext();
+
 	//add listener to GoogleAnalytics, to get feedback
 	ofAddListener(ga->gaResponse, this, &ofApp::googleAnalyticsResponse);
 
@@ -24,7 +26,6 @@ void ofApp::setup(){
 			 "myAppInstallerID"				//app installer id
 			 );
 
-
 	//listen to ofxRemteUIClient events
 	ofAddListener(RUI_GET_OF_EVENT(), this, &ofApp::remoteUIClientDidSomething);
 
@@ -38,7 +39,6 @@ void ofApp::setup(){
 	RUI_SHARE_PARAM(maxRequestsPerSession, 3, 500); //seconds
 	RUI_SHARE_PARAM(sendToGoogleRate, 0.01, 2); //seconds
 	RUI_SHARE_PARAM(randomizeUUID);
-
 
 	RUI_LOAD_FROM_XML();
 

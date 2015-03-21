@@ -117,6 +117,7 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 		sendCustomTimeMeasurement("BenchMark", "IntegerMathBench", intB * 1000);
 		sendCustomTimeMeasurement("BenchMark", "SinCosBench", sinB * 1000);
 		sendCustomTimeMeasurement("BenchMark", "SqrtBench", sqrtB * 1000);
+		ofLogNotice("ofxGoogleAnalytics") << "Benchmarks took " << floatB + intB + sinB + sqrtB << "seconds";
 	}
 }
 
@@ -550,7 +551,7 @@ string ofxGoogleAnalytics::generateUUID(){
 float ofxGoogleAnalytics::simpleFloatBench(){
 	float a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 99999999; i++){
+	for(int i = 0; i < 50000000; i++){
 		a = (2.0f + (i * 0.1f)) / (i * 0.5f + 2.0f - 1.0f) ;
 	}
 	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
@@ -562,7 +563,7 @@ float ofxGoogleAnalytics::simpleIntegerBench(){
 	//measure how long it takes to calc 999999 common int operations
 	int a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 9999999; i++){
+	for(int i = 0; i < 5000000; i++){
 		a = (((a + i) * 3 ) / (1 + a * 2) ) / 2 - 1;
 	}
 	t = ofGetElapsedTimef() - t + float(a - a); //overcome compiler optimizations
@@ -573,7 +574,7 @@ float ofxGoogleAnalytics::simpleIntegerBench(){
 float ofxGoogleAnalytics::simpleSinCosBench(){
 	float a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 9999999; i++){
+	for(int i = 0; i < 5000000; i++){
 		a = (2.0f + sinf(i * 0.1f - 0.3f)) / (cosf(i * 0.5f + 2.0f) + 2.0f) ;
 	}
 	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
@@ -583,7 +584,7 @@ float ofxGoogleAnalytics::simpleSinCosBench(){
 float ofxGoogleAnalytics::simpleSqrtBench(){
 	float a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 9999999; i++){
+	for(int i = 0; i < 5000000; i++){
 		a = (2.0f + powf(i * 0.1f, 1.1f)) / (sqrtf(i * 0.5f + 2.0f) - 1.0f) ;
 	}
 	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
