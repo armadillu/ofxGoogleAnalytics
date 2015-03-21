@@ -94,7 +94,7 @@ class ofxGoogleAnalytics{
 		void setIP(string ipAddress);
 
 		void setRandomizeUUID(bool);
-		void setMaxRequestsPerSession(int n){maxRequestsPerSession = n;};
+		void setMaxRequestsPerSession(int n); //should not be > 500 or google will drop data
 
 		void setSendToGoogleInterval(float interval);	//how often can we contact google?
 														//used to throttle requests

@@ -21,12 +21,11 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	isSetup = false;
 	doBenchmarks = true;
 	enabled = true;
-	reportFrameRates = false;
+	reportFrameRates = true;
 	reportFrameRatesInterval = 60;
-	sendInterval = 1.0; //dont send stuff to google any faster than this
+	sendInterval = 0.1; //dont send stuff to google any faster than this
 	randomizeUUID = false;
-
-	maxRequestsPerSession = 100;
+	maxRequestsPerSession = 400;
 
 	http = new ofxSimpleHttp();
 	http->setVerbose(true);
@@ -62,6 +61,9 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	}
 }
 
+void ofxGoogleAnalytics::setMaxRequestsPerSession(int n){
+	maxRequestsPerSession = ofClamp(n, 10, 499);
+};
 
 void ofxGoogleAnalytics::setSendSimpleBenchmarks(bool d){
 	doBenchmarks = d;
