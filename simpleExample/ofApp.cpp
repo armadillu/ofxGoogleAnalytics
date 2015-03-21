@@ -24,11 +24,11 @@ void ofApp::setup(){
 
 	ga.setSendToGoogleInterval(1.0); //your can throttle down how often you send data, just in case
 
-	ga.setup("UA-51706745-1",				//google track ID
-			 "ofxGoogleAnalyticsExample",	//app name
-			 "0.1",							//app version
-			 "myAppID",						//ap id
-			 "myAppInstallerID"				//app installer id
+	ga.setup("UA-51706745-1",				//google track ID << REPLACE WITH YOURS!
+			 "ofxGoogleAnalytics SimpleExample",	//app name
+			 "v" + ofGetTimestampString("%Y.%m.%d"),	//app version
+			 "mySimpleAppID",						//ap id
+			 "mySimpleAppInstallerID"				//app installer id
 			 );
 
 }
