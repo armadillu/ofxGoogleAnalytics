@@ -50,6 +50,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	cpuName = getComputerCPU();
 	modelName = getComputerModel();
 	ofVersion = ofGetVersionInfo();
+	computerPlatform = getComputerPlatform();
 	ofStringReplace(ofVersion, "\n", "");;
 }
 
@@ -153,7 +154,7 @@ void ofxGoogleAnalytics::draw(int x, int y){
 
 
 void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
-	if (ID <= 20 && ID > 4){
+	if (ID <= 20 && ID > 0){
 		OFX_GA_CHECKS();
 		string query = basicQuery(AnalyticsTiming);
 		query += "&cm" + ofToString(ID)+ "=" + ofToString(value);
@@ -165,7 +166,7 @@ void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
 }
 
 void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
-	if (ID <= 20 && ID > 4){
+	if (ID <= 20 && ID > 5){
 		sendCustomDimensionInternal(ID, value);
 	}else{
 		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
@@ -375,6 +376,34 @@ string ofxGoogleAnalytics::getComputerGPU(){
 	return "Unknown GPU";
 }
 
+string ofxGoogleAnalytics::getComputerPlatform(){
+
+	ofTargetPlatform platform = ofGetTargetPlatform();
+	string platS;
+	switch (platform) {
+		case OF_TARGET_OSX:{
+			#ifdef TARGET_OSX
+			SInt32 major = 10, minor = 4, bugfix = 1;
+			Gestalt(gestaltSystemVersionBugFix, &bugfix);
+			Gestalt(gestaltSystemVersionMajor, &major);
+			Gestalt(gestaltSystemVersionMinor, &minor);
+			platS = "Macintosh; Mac OS X " + ofToString(major) + "." +
+			ofToString(minor) + "." + ofToString(bugfix);
+			#endif
+		}break;
+		case OF_TARGET_WINGCC: return "Windows; GCC"; break;
+		case OF_TARGET_WINVS:  return "Windows; Visual Studio"; break;
+		case OF_TARGET_IOS: return "iOS"; break;
+		case OF_TARGET_ANDROID: return "Android"; break;
+		case OF_TARGET_LINUX: return "Linux"; break;
+		case OF_TARGET_LINUX64: return "Linux 64"; break;
+		case OF_TARGET_LINUXARMV6L: return "Linux ARM v6"; break;
+		case OF_TARGET_LINUXARMV7L: return "Linux ARM v7"; break;
+	}
+	return "Unknown Platform";
+}
+
+
 void ofxGoogleAnalytics::reportHardwareAsEvent(){
 
 	//send hw info as an event
@@ -397,6 +426,12 @@ void ofxGoogleAnalytics::reportHardwareAsEvent(){
 		ofLogNotice("ofxGoogleAnalytics") << "Reporting my OF version '" << ofVersion << "'";
 		sendEvent("Software", "OF Version", 0, ofVersion, false);
 	}
+
+	if(computerPlatform.size()){
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my copmuter platform '" << computerPlatform << "'";
+		sendEvent("Software", "OF Version", 0, computerPlatform, false);
+	}
+
 }
 
 
@@ -417,6 +452,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		sendCustomDimensionInternal(2, cpuName);
 		sendCustomDimensionInternal(3, gpuName);
 		sendCustomDimensionInternal(4, modelName);
+		sendCustomDimensionInternal(5, computerPlatform);
 	}
 
 	if (requestCounter >= maxRequestsPerSession ){ //limit of 500 requests per session! restart session!
@@ -447,7 +483,7 @@ void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 	//ofLogNotice("ofxGoogleAnalytics") << "sendRequest";
 
 	string cacheBuster = "&z=" + ofToString((int)ofRandom(0, 999999));
-	string url = GA_URL_ENDPOINT + item.queryString + cacheBuster;
+	string url = string( debugAnalytics ? GA_DEBUG_URL_ENDPOINT: GA_URL_ENDPOINT ) + item.queryString + cacheBuster;
 
 	//cout << url << endl;
 
@@ -480,35 +516,10 @@ void ofxGoogleAnalytics::googleResponse(ofxSimpleHttpResponse &res){
 
 string ofxGoogleAnalytics::getUserAgent(){
 
-	ofTargetPlatform platform = ofGetTargetPlatform();
-	string platS;
-
-	switch (platform) {
-		case OF_TARGET_OSX:{
-			#ifdef TARGET_OSX
-			SInt32 major = 10, minor = 4, bugfix = 1;
-			Gestalt(gestaltSystemVersionBugFix, &bugfix);
-			Gestalt(gestaltSystemVersionMajor, &major);
-			Gestalt(gestaltSystemVersionMinor, &minor);
-
-			platS = "(Macintosh; Intel Mac OS X " + ofToString(major) + "_" +
-					ofToString(minor) + "_" + ofToString(bugfix) + ") ";
-			#endif
-			}break;
-		case OF_TARGET_WINGCC: platS = "(Windows; GCC)"; break;
-		case OF_TARGET_WINVS:  platS = "(Windows; Visual Studio)"; break;
-		case OF_TARGET_IOS: platS = "(iOS)"; break;
-		case OF_TARGET_ANDROID: platS = "(Android)"; break;
-		case OF_TARGET_LINUX: platS = "(Linux)"; break;
-		case OF_TARGET_LINUX64: platS = "(Linux 64)"; break;
-		case OF_TARGET_LINUXARMV6L: platS = "(Linux ARM v6)"; break;
-		case OF_TARGET_LINUXARMV7L: platS = "(Linux ARM v7)"; break;
-		default:  platS = "(Unknown Platform)"; break;
-	}
-
+	string platform = "(" + computerPlatform + ")";
 	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
 						"." + ofToString(ofGetVersionPatch());
-	string all = "ofxSimpleHttp/ofxGoogleAnalytics " + platS + " OpenFrameworks/" + ofVersion;
+	string all = "ofxSimpleHttp/ofxGoogleAnalytics " + platform + " OpenFrameworks/" + ofVersion;
 	return (all);
 }
 

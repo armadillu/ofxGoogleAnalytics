@@ -14,6 +14,8 @@
 #include "uriencode.h"
 
 #define UUID_FILENAME "UUID.txt"
+
+const bool debugAnalytics = false;
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 #define GA_DEBUG_URL_ENDPOINT "https://www.google-analytics.com/debug/collect?"
 
@@ -109,10 +111,11 @@ class ofxGoogleAnalytics{
 		//	2	CPU
 		//	3	GPU
 		//	4	Computer Model
+		//	5	OS
 		//YOU MUST SETUP THIS in your google analytics account
 		// https://farm8.staticflickr.com/7648/16874457272_9bb0d95d1b_o_d.png
 
-		void sendCustomDimension(int dimensionID/*1..20*/, string value);
+		void sendCustomDimension(int dimensionID/*6..20*/, string value);
 
 
 		//if you want to be notified of ok / ko
@@ -197,6 +200,7 @@ class ofxGoogleAnalytics{
 		string getComputerModel();
 		string getComputerCPU();
 		string getComputerGPU();
+		string getComputerPlatform();
 
 		void reportHardwareAsEvent();
 
@@ -205,6 +209,7 @@ class ofxGoogleAnalytics{
 		string cpuName;
 		string modelName;
 		string ofVersion;
+		string computerPlatform;
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
