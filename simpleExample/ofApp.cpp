@@ -26,7 +26,7 @@ void ofApp::setup(){
 
 	ga.setup("UA-51706745-1",				//google track ID << REPLACE WITH YOURS!
 			 "ofxGoogleAnalytics SimpleExample",	//app name
-			 "v" + ofGetTimestampString("%Y.%m.%d"),	//app version
+			 "v1" ,	//app version
 			 "mySimpleAppID",						//ap id
 			 "mySimpleAppInstallerID"				//app installer id
 			 );
