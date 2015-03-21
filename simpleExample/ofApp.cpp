@@ -22,11 +22,11 @@ void ofApp::setup(){
 
 	ga.setRandomizeUUID(false); //make each new session be a different user?
 
-	ga.setSendToGoogleInterval(1.0); //your can throttle down how often you send data, just in case
+	ga.setSendToGoogleInterval(0.0); //your can throttle down how often you send data, just in case
 
 	ga.setup("UA-51706745-1",				//google track ID << REPLACE WITH YOURS!
 			 "ofxGoogleAnalytics SimpleExample",	//app name
-			 "v1" ,	//app version
+			 "v1",									//app version
 			 "mySimpleAppID",						//ap id
 			 "mySimpleAppInstallerID"				//app installer id
 			 );

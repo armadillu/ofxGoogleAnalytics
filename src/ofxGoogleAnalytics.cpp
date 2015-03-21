@@ -27,14 +27,6 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	randomizeUUID = false;
 	maxRequestsPerSession = 400;
 
-	http = new ofxSimpleHttp();
-	http->setVerbose(true);
-	http->setUserAgent(getUserAgent());
-	http->setCancelCurrentDownloadOnDestruction(false);
-
-	//add download listener
-	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
-
 	cfg.currentUUID = loadUUID();
 	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
 		cfg.currentUUID = generateUUID();
@@ -49,13 +41,23 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	cpuName = getComputerCPU();
 	modelName = getComputerModel();
 	ofVersion = ofGetVersionInfo();
+	ofStringReplace(ofVersion, "\n", "");
 	computerPlatform = getComputerPlatform();
-	ofStringReplace(ofVersion, "\n", "");;
+
+	http = new ofxSimpleHttp();
+	http->setVerbose(true);
+	http->setUserAgent(getUserAgent());
+	http->setCancelCurrentDownloadOnDestruction(false);
+
+	//add download listener
+	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
+
 }
 
 
 ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	if(isSetup){
+		ofLogNotice("ofxGoogleAnalytics") << "Closing session for good!";
 		endSession(false);
 		delete http;
 	}
