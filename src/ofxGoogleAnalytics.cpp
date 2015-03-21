@@ -51,7 +51,6 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	//add download listener
 	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
-
 }
 
 
@@ -384,16 +383,17 @@ string ofxGoogleAnalytics::getComputerGPU(){
 string ofxGoogleAnalytics::getComputerPlatform(){
 
 	ofTargetPlatform platform = ofGetTargetPlatform();
-	string platS;
 	switch (platform) {
 		case OF_TARGET_OSX:{
 			#ifdef TARGET_OSX
+			string platS;
 			SInt32 major = 10, minor = 4, bugfix = 1;
 			Gestalt(gestaltSystemVersionBugFix, &bugfix);
 			Gestalt(gestaltSystemVersionMajor, &major);
 			Gestalt(gestaltSystemVersionMinor, &minor);
 			platS = "Macintosh; Mac OS X " + ofToString(major) + "." +
 			ofToString(minor) + "." + ofToString(bugfix);
+			return platS;
 			#endif
 		}break;
 		case OF_TARGET_WINGCC: return "Windows; GCC"; break;
@@ -433,7 +433,7 @@ void ofxGoogleAnalytics::reportHardwareAsEvent(){
 	}
 
 	if(computerPlatform.size()){
-		ofLogNotice("ofxGoogleAnalytics") << "Reporting my copmuter platform '" << computerPlatform << "'";
+		ofLogNotice("ofxGoogleAnalytics") << "Reporting my computer platform '" << computerPlatform << "'";
 		sendEvent("Software", "OF Version", 0, computerPlatform, false);
 	}
 
@@ -524,8 +524,7 @@ string ofxGoogleAnalytics::getUserAgent(){
 	string platform = "(" + computerPlatform + ")";
 	string ofVersion = ofToString(ofGetVersionMajor()) + "." + ofToString(ofGetVersionMinor()) +
 						"." + ofToString(ofGetVersionPatch());
-	string all = "ofxSimpleHttp/ofxGoogleAnalytics " + platform + " OpenFrameworks/" + ofVersion;
-	return (all);
+	return "ofxGoogleAnalytics/" + ofxGAVersion + " " + platform + " OpenFrameworks " + ofVersion;
 }
 
 string ofxGoogleAnalytics::loadUUID(){

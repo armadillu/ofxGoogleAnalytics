@@ -16,6 +16,8 @@
 #define UUID_FILENAME "UUID.txt"
 
 const bool debugAnalytics = false;
+const string ofxGAVersion = "1.0";
+
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 #define GA_DEBUG_URL_ENDPOINT "https://www.google-analytics.com/debug/collect?"
 
@@ -25,6 +27,8 @@ const bool debugAnalytics = false;
 							ofLogError() <<	"ofxGoogleAnalytics: call setUp() first!";	\
 							return;														\
 						}
+
+
 
 class ofxGoogleAnalytics{
 
