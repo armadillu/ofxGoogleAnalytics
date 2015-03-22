@@ -26,6 +26,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	sendInterval = 0.1; //dont send stuff to google any faster than this
 	randomizeUUID = false;
 	maxRequestsPerSession = 400;
+	verbose = false;
 
 	cfg.currentUUID = loadUUID();
 	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
@@ -60,6 +61,11 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 		endSession(false);
 		delete http;
 	}
+}
+
+void ofxGoogleAnalytics::setVerbose(bool v){
+	verbose = v;
+
 }
 
 void ofxGoogleAnalytics::setMaxRequestsPerSession(int n){
@@ -159,6 +165,7 @@ void ofxGoogleAnalytics::draw(int x, int y){
 
 void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
 	if (ID <= 20 && ID > 0){
+		if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomMetric(" << ofToString(ID) << ", " << ofToString(value) << ")";
 		OFX_GA_CHECKS();
 		string query = basicQuery(AnalyticsTiming);
 		query += "&cm" + ofToString(ID)+ "=" + ofToString(value);
@@ -171,6 +178,7 @@ void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
 
 void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
 	if (ID <= 20 && ID > 5){
+		if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomDimension(" << ofToString(ID) << ", " << ofToString(value) << ")";
 		sendCustomDimensionInternal(ID, value);
 	}else{
 		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
@@ -214,6 +222,7 @@ void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 
 void ofxGoogleAnalytics::sendFrameRateReport(){
 	OFX_GA_CHECKS();
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendFrameRateReport()";
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=AppTimings";
 	query += "&utv=FrameRate";
@@ -225,6 +234,7 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string timingVariable,
 							   int timeInMs, string timingLabel){
 	OFX_GA_CHECKS();
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomTimeMeasurement(" << ofToString(timingCategory) << ", " << ofToString(timingVariable) << ")";
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=" + UriEncode(timingCategory);
 	query += "&utv=" + UriEncode(timingVariable);
@@ -237,6 +247,10 @@ void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string
 void ofxGoogleAnalytics::sendEvent(string category, string action, int value, string label, bool interactive ){
 
 	OFX_GA_CHECKS();
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendEvent(" << ofToString(category) << ", " <<
+		ofToString(action) << ", " << ofToString(value) << ", " << ofToString(label) <<
+		", " << ofToString(interactive) << ")";
+
 	string query = basicQuery(AnalyticsEvent);
 	query += "&ec=" + UriEncode(category);
 	if (action.size()) query += "&ea=" + UriEncode(action);
@@ -248,6 +262,8 @@ void ofxGoogleAnalytics::sendEvent(string category, string action, int value, st
 
 void ofxGoogleAnalytics::sendScreenView(string screenName){
 	OFX_GA_CHECKS();
+
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendScreenView(" << ofToString(screenName) <<  ")";
 	lastUserScreen = screenName;
 	string query = basicQuery(AnalyticsScreenView);
 	query += "&cd=" + UriEncode(screenName);
@@ -257,6 +273,9 @@ void ofxGoogleAnalytics::sendScreenView(string screenName){
 
 void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle){
 	OFX_GA_CHECKS();
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendScreenView(" << ofToString(documentPath) <<
+		"," << ofToString(documentTitle) <<  ")";
+
 	string query = basicQuery(AnalyticsPageview);
 	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
 	query += "&dp=" + UriEncode("/" + documentPath);
@@ -266,6 +285,9 @@ void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle)
 
 void ofxGoogleAnalytics::sendException(string description, bool fatal){
 	OFX_GA_CHECKS();
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendException(" << ofToString(description) <<
+		"," << ofToString(fatal) <<  ")";
+
 	string query = basicQuery(AnalyticsException);
 	query += "&exd=" + UriEncode(description);
 	query += "&exf=" + string(fatal ? "1" : "0");
@@ -276,6 +298,9 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 void ofxGoogleAnalytics::startSession(bool restart){
 	//ofLogNotice("ofxGoogleAnalytics") << "🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏  Start Session  🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏";
 	if(randomizeUUID) generateUUID();
+
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "startSession()";
+
 	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
 	query += "&sc=start";
@@ -288,6 +313,8 @@ void ofxGoogleAnalytics::startSession(bool restart){
 
 void ofxGoogleAnalytics::endSession(bool restart){
 	//ofLogNotice("ofxGoogleAnalytics") << "🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎 End Session 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎";
+
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "endSession()";
 	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";

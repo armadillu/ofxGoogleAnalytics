@@ -92,6 +92,8 @@ class ofxGoogleAnalytics{
 
 		void setCustomUserAgent(string ua); //will be url encoded!
 
+		void setVerbose(bool);
+
 		void setUserID(string userName);
 		void setSendSimpleBenchmarks(bool doBench);
 
@@ -158,6 +160,7 @@ class ofxGoogleAnalytics{
 		void sendCustomDimensionInternal(int dimensionID/*0..20*/, string value);
 		ofxSimpleHttp * http;
 
+		bool verbose;
 		bool enabled;
 		bool isSetup;
 		bool startedFirstSession;
