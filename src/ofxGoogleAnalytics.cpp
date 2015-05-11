@@ -63,6 +63,10 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	}
 }
 
+ofxSimpleHttp* ofxGoogleAnalytics::getHttp(){
+	return http;
+}
+
 void ofxGoogleAnalytics::setVerbose(bool v){
 	verbose = v;
 
