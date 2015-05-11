@@ -19,7 +19,7 @@ void ofApp::setup(){
 	ga->setFramerateReportInterval(600); //every 60 sec, report app's framerate
 	ga->setUserID("armadillu"); //you can set a random user string for the GA session
 
-	ga.setup("UA-51706745-1",				//google track ID << REPLACE WITH YOURS!
+	ga->setup("UA-51706745-1",				//google track ID << REPLACE WITH YOURS!
 			 "ofxGoogleAnalytics SimpleExample",	//app name
 			 "v1",	//app version
 			 "mySimpleAppID",						//ap id
