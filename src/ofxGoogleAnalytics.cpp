@@ -73,9 +73,9 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	cfg.currentUUID = loadUUID();
 	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
 		cfg.currentUUID = generateUUID();
-		ofLogNotice() << "ofxGoogleAnalytics: Creating a new UUID for this app: " << cfg.currentUUID << endl;
+		ofLogWarning("ofxGoogleAnalytics") << "Creating a new UUID for this app: " << cfg.currentUUID;
 	}else{
-		ofLogNotice() << "ofxGoogleAnalytics: Loaded UUID for this app: " << cfg.currentUUID << endl;
+		ofLogWarning("ofxGoogleAnalytics") << "Loaded UUID for this app: " << cfg.currentUUID;
 	}
 	time = ofGetElapsedTimef();
 
