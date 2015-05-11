@@ -28,30 +28,6 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	maxRequestsPerSession = 400;
 	verbose = false;
 
-	cfg.currentUUID = loadUUID();
-	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
-		cfg.currentUUID = generateUUID();
-		ofLogNotice() << "ofxGoogleAnalytics: Creating a new UUID for this app: " << cfg.currentUUID << endl;
-	}else{
-		ofLogNotice() << "ofxGoogleAnalytics: Loaded UUID for this app: " << cfg.currentUUID << endl;
-	}
-	time = ofGetElapsedTimef();
-
-	//HW thingies
-	gpuName = getComputerGPU();
-	cpuName = getComputerCPU();
-	modelName = getComputerModel();
-	ofVersion = ofGetVersionInfo();
-	ofStringReplace(ofVersion, "\n", "");
-	computerPlatform = getComputerPlatform();
-
-	http = new ofxSimpleHttp();
-	http->setVerbose(true);
-	http->setUserAgent(getUserAgent());
-	http->setCancelCurrentDownloadOnDestruction(false);
-
-	//add download listener
-	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
 }
 
 
@@ -88,9 +64,36 @@ void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
 							   string appID, string appInstallerID){
 
+	
 	cfg.trackingID = googleTrackingID_;
 	cfg.appName = UriEncode(appName);
+	cfg.appID = UriEncode(appID);
+	cfg.appInstallerID = UriEncode(appInstallerID);
+	
+	cfg.currentUUID = loadUUID();
+	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
+		cfg.currentUUID = generateUUID();
+		ofLogNotice() << "ofxGoogleAnalytics: Creating a new UUID for this app: " << cfg.currentUUID << endl;
+	}else{
+		ofLogNotice() << "ofxGoogleAnalytics: Loaded UUID for this app: " << cfg.currentUUID << endl;
+	}
+	time = ofGetElapsedTimef();
 
+	//HW thingies
+	gpuName = getComputerGPU();
+	cpuName = getComputerCPU();
+	modelName = getComputerModel();
+	ofVersion = ofGetVersionInfo();
+	ofStringReplace(ofVersion, "\n", "");
+	computerPlatform = getComputerPlatform();
+
+	http = new ofxSimpleHttp();
+	http->setVerbose(true);
+	http->setUserAgent(getUserAgent());
+	http->setCancelCurrentDownloadOnDestruction(false);
+
+	//add download listener
+	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
 	#ifdef TARGET_OSX
 		//this is ghetto TODO!
 		//http://stackoverflow.com/questions/3223753/is-there-a-macro-that-xcode-automatically-sets-in-debug-builds
@@ -111,9 +114,6 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 			cfg.appVersion = UriEncode(appVersion);
 		#endif
 	#endif
-
-	cfg.appID = UriEncode(appID);
-	cfg.appInstallerID = UriEncode(appInstallerID);
 
 	isSetup = true;
 	startedFirstSession = false;

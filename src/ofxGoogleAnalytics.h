@@ -13,7 +13,7 @@
 #include "ofxSimpleHttp.h"
 #include "uriencode.h"
 
-#define UUID_FILENAME "UUID.txt"
+#define UUID_FILENAME (cfg.appID + "_UUID.txt")
 
 const bool debugAnalytics = false;
 const string ofxGAVersion = "1.0";
