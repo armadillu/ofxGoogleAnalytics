@@ -90,6 +90,7 @@ class ofxGoogleAnalytics{
 
 		//if you want to time different parts of your code and report that, you can do this here
 		//and look in the "Behvaior/App Speed" section of he web interface
+		//this will be automatically re-sent every time we restart the session.
 		void sendCustomTimeMeasurement(string timingCategory, string timingVariable, int timeInMs, string timingLabel = "");
 
 		void setCustomUserAgent(string ua); //will be url encoded!
@@ -220,6 +221,9 @@ class ofxGoogleAnalytics{
 		string modelName;
 		string ofVersion;
 		string computerPlatform;
+
+		map<int,string> customDimensions;
+		void sendAllUserDefinedCustomDimensions();
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */

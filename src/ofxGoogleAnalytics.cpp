@@ -25,7 +25,7 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	reportFrameRatesInterval = 60;
 	sendInterval = 0.1; //dont send stuff to google any faster than this
 	randomizeUUID = false;
-	maxRequestsPerSession = 400;
+	maxRequestsPerSession = 450;
 	verbose = false;
 
 	http = new ofxSimpleHttp();
@@ -181,10 +181,11 @@ void ofxGoogleAnalytics::sendCustomMetric(int ID, float value){
 void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
 	if (ID <= 20 && ID > 5){
 		if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomDimension(" << ofToString(ID) << ", " << ofToString(value) << ")";
+		customDimensions[ID] = value;
 		sendCustomDimensionInternal(ID, value);
 	}else{
 		//https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cm[1-9][0-9]*
-		ofLogError("ofxGoogleAnalytics") << "Dimension ID's should be between 4 and 20 - 0..3 are used by the addon.";
+		ofLogError("ofxGoogleAnalytics") << "Dimension ID's should be between 6 and 20 - 0..5 are used by the addon.";
 	}
 }
 
@@ -221,6 +222,15 @@ void ofxGoogleAnalytics::setFramerateReportInterval(float sec){
 	reportFrameRatesInterval = sec;
 }
 
+
+void ofxGoogleAnalytics::sendAllUserDefinedCustomDimensions(){
+
+	map<int,string>::iterator it = customDimensions.begin();
+	while( it != customDimensions.end()){
+		sendCustomDimensionInternal(it->first, it->second);
+		++it;
+	}
+}
 
 void ofxGoogleAnalytics::sendFrameRateReport(){
 	OFX_GA_CHECKS();
@@ -482,6 +492,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 		//send hw info as an event
 		reportHardwareAsEvent();
+
 		sendCustomDimensionInternal(1, ofVersion);
 		sendCustomDimensionInternal(2, cpuName);
 		sendCustomDimensionInternal(3, gpuName);
@@ -493,6 +504,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		requestCounter = 0;
 		endSession(true); 	//if true(restart), will send regadless, so we overcome the block by #requestCounter
 		startSession(true);	//idem
+		sendAllUserDefinedCustomDimensions();
 	}
 
 	RequestQueueItem item;
