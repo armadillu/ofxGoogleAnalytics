@@ -236,7 +236,7 @@ void ofxGoogleAnalytics::sendFrameRateReport(){
 void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string timingVariable,
 							   int timeInMs, string timingLabel){
 	OFX_GA_CHECKS();
-	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomTimeMeasurement(" << ofToString(timingCategory) << ", " << ofToString(timingVariable) << ")";
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomTimeMeasurement(" << ofToString(timingCategory) << ", " << ofToString(timingVariable) << ", " << timeInMs << ")";
 	string query = basicQuery(AnalyticsTiming);
 	query += "&utc=" + UriEncode(timingCategory);
 	query += "&utv=" + UriEncode(timingVariable);
