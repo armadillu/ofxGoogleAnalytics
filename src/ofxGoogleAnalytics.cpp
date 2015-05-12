@@ -28,6 +28,10 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	maxRequestsPerSession = 400;
 	verbose = false;
 
+	http = new ofxSimpleHttp();
+	http->setVerbose(true);
+	http->setUserAgent(getUserAgent());
+	http->setCancelCurrentDownloadOnDestruction(false);
 }
 
 
@@ -63,13 +67,12 @@ void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
 
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
 							   string appID, string appInstallerID){
-
 	
 	cfg.trackingID = googleTrackingID_;
 	cfg.appName = UriEncode(appName);
 	cfg.appID = UriEncode(appID);
-	cfg.appInstallerID = UriEncode(appInstallerID);
-	
+	cfg.appNameRaw = appName;
+	cfg.appInstallerID = UriEncode(appInstallerID);	
 	cfg.currentUUID = loadUUID();
 	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
 		cfg.currentUUID = generateUUID();
@@ -86,11 +89,6 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	ofVersion = ofGetVersionInfo();
 	ofStringReplace(ofVersion, "\n", "");
 	computerPlatform = getComputerPlatform();
-
-	http = new ofxSimpleHttp();
-	http->setVerbose(true);
-	http->setUserAgent(getUserAgent());
-	http->setCancelCurrentDownloadOnDestruction(false);
 
 	//add download listener
 	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
@@ -560,7 +558,8 @@ string ofxGoogleAnalytics::getUserAgent(){
 
 string ofxGoogleAnalytics::loadUUID(){
 
-	ifstream myfile(ofToDataPath(UUID_FILENAME,true).c_str());
+	string path = ofToDataPath(UUID_FILENAME,true);
+	ifstream myfile(path.c_str());
 	string UUID;
 	if (myfile.is_open()){
 		getline( myfile, UUID, '\n' );

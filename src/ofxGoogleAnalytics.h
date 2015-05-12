@@ -13,7 +13,7 @@
 #include "ofxSimpleHttp.h"
 #include "uriencode.h"
 
-#define UUID_FILENAME (cfg.appID + "_UUID.txt")
+#define UUID_FILENAME (cfg.appNameRaw + "_UUID.txt")
 
 const bool debugAnalytics = false;
 const string ofxGAVersion = "1.0";
@@ -135,6 +135,7 @@ class ofxGoogleAnalytics{
 			string trackingID;
 			string currentUUID;
 			string appName;
+			string appNameRaw;
 			string appID;
 			string appVersion;
 			string appInstallerID;
