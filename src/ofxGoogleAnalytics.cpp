@@ -38,9 +38,9 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 	verbose = false;
 
 	http = new ofxSimpleHttp();
-	http->setVerbose(true);
-	http->setUserAgent(getUserAgent());
+	http->setCancelPendingDownloadsOnDestruction(false); //when deleted, wait until all pending stuff is sent
 	http->setCancelCurrentDownloadOnDestruction(false);
+	http->setUserAgent(getUserAgent());
 }
 
 
@@ -48,6 +48,10 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	if(isSetup){
 		ofLogNotice("ofxGoogleAnalytics") << "Closing session for good!";
 		endSession(false);
+		while(requestQueue.size()){ //lets send all what's pending right now
+			sendRequest(requestQueue[0]);
+			requestQueue.erase(requestQueue.begin());
+		}
 		delete http;
 	}
 }
@@ -58,7 +62,6 @@ ofxSimpleHttp* ofxGoogleAnalytics::getHttp(){
 
 void ofxGoogleAnalytics::setVerbose(bool v){
 	verbose = v;
-
 }
 
 void ofxGoogleAnalytics::setMaxRequestsPerSession(int n){
@@ -555,7 +558,7 @@ void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 	//cout << url << endl;
 
 	if (item.blocking){
-		ofxSimpleHttpResponse r = http->fetchURLBlocking(url); //happens now - blocks main thread?? really??
+		ofxSimpleHttpResponse r = http->fetchURLBlocking(url);
 		r.print();
 	}else{
 		http->fetchURL(url, true);
