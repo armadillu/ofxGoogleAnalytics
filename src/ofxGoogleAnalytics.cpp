@@ -439,8 +439,11 @@ string ofxGoogleAnalytics::getComputerCPU(){
 }
 
 string ofxGoogleAnalytics::getComputerGPU(){
+	#ifdef TARGET_OSX
 	string renderer = string((char*)glGetString(GL_RENDERER));
 	return renderer;
+	#endif
+	return "unknown GPU";
 }
 
 string ofxGoogleAnalytics::getComputerPlatform(){
