@@ -15,6 +15,15 @@
 #import <IOKit/Graphics/IOFrameBufferShared.h>
 #endif
 
+#ifdef TARGET_WIN32
+#ifdef _WIN32
+#if(!defined(FREE_WINDOWS))
+#include <intrin.h>
+#endif
+#include <windows.h>
+#endif
+#endif
+
 ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	requestCounter = 0;
@@ -388,6 +397,9 @@ string ofxGoogleAnalytics::getComputerModel(){
 	::sysctlbyname("hw.model", const_cast<char *>(model.data()), &len, NULL, 0);
 	return model;
 	#endif
+	#ifdef TARGET_WIN32
+	return "Windows PC";
+	#endif
 	return "Unknown Model";
 }
 
@@ -398,6 +410,27 @@ string ofxGoogleAnalytics::getComputerCPU(){
 	std::string cpu(len-1, '\0');
 	::sysctlbyname("machdep.cpu.brand_string", const_cast<char *>(cpu.data()), &len, NULL, 0);
 	return cpu;
+	#endif
+
+	#ifdef TARGET_WIN32
+	char buf[48];
+	int result[4];
+
+	__cpuid(result, 0x80000000);
+
+	if(result[0] >= (int)0x80000004) {
+		__cpuid((int*)(buf+0), 0x80000002);
+		__cpuid((int*)(buf+16), 0x80000003);
+		__cpuid((int*)(buf+32), 0x80000004);
+
+		string brand = buf;
+
+		size_t i;
+		if((i = brand.find("  ")) != string::npos)
+			brand = brand.substr(0, i);
+
+		return brand;
+	}
 	#endif
 	return "Unknown CPU";
 }
