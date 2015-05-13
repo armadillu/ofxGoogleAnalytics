@@ -436,20 +436,8 @@ string ofxGoogleAnalytics::getComputerCPU(){
 }
 
 string ofxGoogleAnalytics::getComputerGPU(){
-	#ifdef TARGET_OSX
-	string GPU = ofSystem("ioreg -rd1 -c IOPCIDevice  -k 'model'");
-	ofBuffer b = ofBuffer(GPU);
-	b.resetLineReader();
-	while(!b.isLastLine()){
-		string l = b.getNextLine();
-		if(ofIsStringInString(l, "model")){
-			vector<string>split = ofSplitString(l, "\"", true, true );
-			if(split.size() > 2) return split[2];
-			break;
-		}
-	}
-	#endif
-	return "Unknown GPU";
+	string renderer = string((char*)glGetString(GL_RENDERER));
+	return renderer;
 }
 
 string ofxGoogleAnalytics::getComputerPlatform(){
