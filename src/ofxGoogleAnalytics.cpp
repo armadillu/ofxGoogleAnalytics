@@ -46,35 +46,16 @@ ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 	if(isSetup){
-		ofLogNotice("ofxGoogleAnalytics") << "Closing session for good!";
+		ofLogNotice("ofxGoogleAnalytics") << "Closing session for good! " << requestQueue.size() << " requests pending executing...";
+
 		endSession(false);
 		while(requestQueue.size()){ //lets send all what's pending right now
 			sendRequest(requestQueue[0]);
 			requestQueue.erase(requestQueue.begin());
 		}
+		ofLogNotice("ofxGoogleAnalytics") << "all pending requests executed!";
 		delete http;
 	}
-}
-
-ofxSimpleHttp* ofxGoogleAnalytics::getHttp(){
-	return http;
-}
-
-void ofxGoogleAnalytics::setVerbose(bool v){
-	verbose = v;
-}
-
-void ofxGoogleAnalytics::setMaxRequestsPerSession(int n){
-	maxRequestsPerSession = ofClamp(n, 10, 499);
-};
-
-void ofxGoogleAnalytics::setSendSimpleBenchmarks(bool d){
-	doBenchmarks = d;
-}
-
-
-void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
-	sendInterval = ofClamp(interval, 0.05, FLT_MAX);
 }
 
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
@@ -145,6 +126,27 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 }
 
 
+ofxSimpleHttp* ofxGoogleAnalytics::getHttp(){
+	return http;
+}
+
+void ofxGoogleAnalytics::setVerbose(bool v){
+	verbose = v;
+}
+
+void ofxGoogleAnalytics::setMaxRequestsPerSession(int n){
+	maxRequestsPerSession = ofClamp(n, 10, 499);
+};
+
+void ofxGoogleAnalytics::setSendSimpleBenchmarks(bool d){
+	doBenchmarks = d;
+}
+
+
+void ofxGoogleAnalytics::setSendToGoogleInterval(float interval){
+	sendInterval = ofClamp(interval, 0.01, FLT_MAX);
+}
+
 void ofxGoogleAnalytics::update(){
 
 	if(!enabled) return;
@@ -153,10 +155,12 @@ void ofxGoogleAnalytics::update(){
 
 	if( now - time > sendInterval){
 		time = now;
+		mutex.lock();
 		if (requestQueue.size()){
 			sendRequest(requestQueue[0]);
 			requestQueue.erase(requestQueue.begin());
 		}
+		mutex.unlock();
 	}
 
 	if (reportFrameRates){
@@ -170,10 +174,13 @@ void ofxGoogleAnalytics::update(){
 
 void ofxGoogleAnalytics::draw(int x, int y){
 	string httpS = http->drawableString();
+	mutex.lock();
 	ofDrawBitmapString("ofxGoogleAnalytics: " + ofToString(requestQueue.size()) + " Queued Requests" +
 					   "\nRequestsThisSession: " + ofToString(requestCounter) + " / " +
 					   ofToString(maxRequestsPerSession) + "\n\n" +  httpS
 					   , x, y);
+	mutex.unlock();
+
 }
 
 
@@ -527,7 +534,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		sendCustomDimensionInternal(5, computerPlatform);
 	}
 
-	if (requestCounter >= maxRequestsPerSession ){ //limit of 500 requests per session! restart session!
+	if (requestCounter >= maxRequestsPerSession ){ //limit of maxRequestsPerSession requests per session! restart session!
 		requestCounter = 0;
 		endSession(true); 	//if true(restart), will send regadless, so we overcome the block by #requestCounter
 		startSession(true);	//idem
@@ -538,13 +545,9 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 	item.queryString = queryString;
 	item.blocking = blocking;
 
-//	string debugQuery = queryString;
-//	for(int i = 0; i < debugQuery.size(); i++){
-//		if(debugQuery[i] == '&') debugQuery[i] = '\n';
-//	}
-//	ofLogNotice("ofxGoogleAnalytics") << "-- SENDING TO GOOGLE ------------------------\n" << debugQuery << endl << endl;
-
+	mutex.lock();
 	requestQueue.push_back(item);
+	mutex.unlock();
 
 	requestCounter++;
 }
@@ -553,12 +556,8 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 
-	//ofLogNotice("ofxGoogleAnalytics") << "sendRequest";
-
 	string cacheBuster = "&z=" + ofToString((int)ofRandom(0, 999999));
 	string url = string( debugAnalytics ? GA_DEBUG_URL_ENDPOINT: GA_URL_ENDPOINT ) + item.queryString + cacheBuster;
-
-	//cout << url << endl;
 
 	if (item.blocking){
 		ofxSimpleHttpResponse r = http->fetchURLBlocking(url);

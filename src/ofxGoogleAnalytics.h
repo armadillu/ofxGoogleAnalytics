@@ -222,6 +222,7 @@ class ofxGoogleAnalytics{
 		string ofVersion;
 		string computerPlatform;
 
+		ofMutex mutex;
 		map<int,string> customDimensions;
 		void sendAllUserDefinedCustomDimensions();
 };
