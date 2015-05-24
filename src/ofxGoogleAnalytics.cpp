@@ -49,10 +49,12 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 		ofLogNotice("ofxGoogleAnalytics") << "Closing session for good! " << requestQueue.size() << " requests pending executing...";
 
 		endSession(false);
+		mutex.lock();
 		while(requestQueue.size()){ //lets send all what's pending right now
 			sendRequest(requestQueue[0]);
 			requestQueue.erase(requestQueue.begin());
 		}
+		mutex.unlock();
 		ofLogNotice("ofxGoogleAnalytics") << "all pending requests executed!";
 		delete http;
 	}
