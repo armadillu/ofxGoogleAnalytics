@@ -583,6 +583,7 @@ void ofxGoogleAnalytics::googleResponse(ofxSimpleHttpResponse &res){
 	}else{
 		r.ok = false;
 		r.status = "ko - " + ofToString(res.status) + " " + res.reasonForStatus;
+		ofLogError("ofxGoogleAnalytics") << "Google Response not good! " << r.status;
 	}
 	ofNotifyEvent( gaResponse, r, this );
 }
