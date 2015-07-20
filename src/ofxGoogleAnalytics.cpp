@@ -563,7 +563,7 @@ void ofxGoogleAnalytics::sendRequest(RequestQueueItem item){
 
 	if (item.blocking){
 		ofxSimpleHttpResponse r = http->fetchURLBlocking(url);
-		r.print();
+		//r.print();
 	}else{
 		http->fetchURL(url, true);
 	}
