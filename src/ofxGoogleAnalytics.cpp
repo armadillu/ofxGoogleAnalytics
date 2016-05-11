@@ -471,7 +471,7 @@ string ofxGoogleAnalytics::getComputerPlatform(){
 			return platS;
 			#endif
 		}break;
-		case OF_TARGET_WINGCC: return "Windows; GCC"; break;
+		case OF_TARGET_MINGW: return "Windows; MINGW"; break;
 		case OF_TARGET_WINVS:  return "Windows; Visual Studio"; break;
 		case OF_TARGET_IOS: return "iOS"; break;
 		case OF_TARGET_ANDROID: return "Android"; break;
