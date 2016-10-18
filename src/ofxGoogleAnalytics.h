@@ -43,6 +43,8 @@ class ofxGoogleAnalytics{
 		ofxGoogleAnalytics();
 		~ofxGoogleAnalytics();
 
+		//make sure to call setup from the Main Thread or it will crash
+		//as it makes some GL calls to get GPU info
 		void setup(string googleTrackingID,
 				   string appName = "",
 				   string appVersion = "",

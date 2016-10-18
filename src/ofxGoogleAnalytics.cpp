@@ -448,11 +448,8 @@ string ofxGoogleAnalytics::getComputerCPU(){
 }
 
 string ofxGoogleAnalytics::getComputerGPU(){
-	if(ofThread::isMainThread()){
-		string renderer = string((char*)glGetString(GL_RENDERER));
-		return renderer;
-	}
-	return "unknown GPU";
+	string renderer = string((char*)glGetString(GL_RENDERER));
+	return renderer;
 }
 
 string ofxGoogleAnalytics::getComputerPlatform(){
