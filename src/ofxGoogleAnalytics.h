@@ -11,7 +11,7 @@
 
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
-#include "uriencode.h"
+#include "GA_UriEncode.h"
 
 #define UUID_FILENAME (cfg.appNameRaw + "_UUID.txt")
 

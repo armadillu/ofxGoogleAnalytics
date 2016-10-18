@@ -16,13 +16,13 @@
 
 // hansi: hextable from
 // http://stackoverflow.com/questions/10324/how-can-i-convert-a-hexadecimal-number-to-base-10-efficiently-in-c
-/*static const long HEX2DEC[] = {
+/*static const long GA_HEX2DEC[] = {
 	[0 ... 255] = -1, // bit aligned access into this table is considerably
 	['0'] = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, // faster for most modern processors,
 	['A'] = 10, 11, 12, 13, 14, 15,       // for the space conscious, reduce to
 	['a'] = 10, 11, 12, 13, 14, 15        // signed char.
 };*/
-const char HEX2DEC[256] =
+const char GA_HEX2DEC[256] =
 {
     /*       0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F */
     /* 0 */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
@@ -47,7 +47,7 @@ const char HEX2DEC[256] =
 };
 
 // http://en.wikipedia.org/wiki/Percent-encoding#Types_of_URI_characters
-/*static bool SAFE[256] = {
+/*static bool GA_SAFE[256] = {
 	[0 ... 255] = false,
 	['a'...'z'] = true,
 	['A'...'Z'] = true,
@@ -55,8 +55,8 @@ const char HEX2DEC[256] =
 	['.'] = true
 };*/
 
-// Only alphanum is safe.
-const char SAFE[256] =
+// Only alphanum is GA_SAFE.
+const char GA_SAFE[256] =
 {
     /*      0 1 2 3  4 5 6 7  8 9 A B  C D E F */
     /* 0 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
@@ -81,7 +81,7 @@ const char SAFE[256] =
 };
 
 
-std::string UriEncode(const std::string & sSrc);
-std::string UriDecode(const std::string & sSrc);
+std::string GA_UriEncode(const std::string & sSrc);
+std::string GA_UriDecode(const std::string & sSrc);
 
 #endif

@@ -58,16 +58,17 @@ ofxGoogleAnalytics::~ofxGoogleAnalytics(){
 		ofLogNotice("ofxGoogleAnalytics") << "all pending requests executed!";
 		delete http;
 	}
+	ofLogNotice("ofxGoogleAnalytics") << "~ofxGoogleAnalytics() done!";
 }
 
 void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string appVersion,
 							   string appID, string appInstallerID){
 	
 	cfg.trackingID = googleTrackingID_;
-	cfg.appName = UriEncode(appName);
-	cfg.appID = UriEncode(appID);
+	cfg.appName = GA_UriEncode(appName);
+	cfg.appID = GA_UriEncode(appID);
 	cfg.appNameRaw = appName;
-	cfg.appInstallerID = UriEncode(appInstallerID);	
+	cfg.appInstallerID = GA_UriEncode(appInstallerID);	
 	cfg.currentUUID = loadUUID();
 	if ( cfg.currentUUID.size() == 0 ){ //need to create one!
 		cfg.currentUUID = generateUUID();
@@ -91,20 +92,20 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 		//this is ghetto TODO!
 		//http://stackoverflow.com/questions/3223753/is-there-a-macro-that-xcode-automatically-sets-in-debug-builds
 		#if !defined(__OPTIMIZE__) //
-			cfg.appVersion = UriEncode(appVersion + " Debug");
+			cfg.appVersion = GA_UriEncode(appVersion + " Debug");
 		#else
-			cfg.appVersion = UriEncode(appVersion + " Release");
+			cfg.appVersion = GA_UriEncode(appVersion + " Release");
 		#endif
 	#else
 		#ifdef TARGET_WINDOWS
 			#if defined(_DEBUG)
-			cfg.appVersion = UriEncode(appVersion + " Debug");
+			cfg.appVersion = GA_UriEncode(appVersion + " Debug");
 			#else
-			cfg.appVersion = UriEncode(appVersion + " Release");
+			cfg.appVersion = GA_UriEncode(appVersion + " Release");
 			#endif
 		#else
 			//!osx && !win
-			cfg.appVersion = UriEncode(appVersion);
+			cfg.appVersion = GA_UriEncode(appVersion);
 		#endif
 	#endif
 
@@ -213,13 +214,13 @@ void ofxGoogleAnalytics::sendCustomDimension(int ID, string value){
 void ofxGoogleAnalytics::sendCustomDimensionInternal(int ID, string value){
 	OFX_GA_CHECKS();
 	string query = basicQuery(AnalyticsTiming);
-	query += "&cd" + ofToString(ID)+ "=" + UriEncode(value);
+	query += "&cd" + ofToString(ID)+ "=" + GA_UriEncode(value);
 	enqueueRequest(query);
 }
 
 
 void ofxGoogleAnalytics::setUserID(string userName){
-	userID = UriEncode(userName);
+	userID = GA_UriEncode(userName);
 }
 
 void ofxGoogleAnalytics::setCustomUserAgent(string ua){
@@ -269,10 +270,10 @@ void ofxGoogleAnalytics::sendCustomTimeMeasurement(string timingCategory, string
 	OFX_GA_CHECKS();
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendCustomTimeMeasurement(" << ofToString(timingCategory) << ", " << ofToString(timingVariable) << ", " << timeInMs << ")";
 	string query = basicQuery(AnalyticsTiming);
-	query += "&utc=" + UriEncode(timingCategory);
-	query += "&utv=" + UriEncode(timingVariable);
-	query += "&utt=" + UriEncode(ofToString((int)(timeInMs)));
-	query += "&utl=" + UriEncode(timingLabel);
+	query += "&utc=" + GA_UriEncode(timingCategory);
+	query += "&utv=" + GA_UriEncode(timingVariable);
+	query += "&utt=" + GA_UriEncode(ofToString((int)(timeInMs)));
+	query += "&utl=" + GA_UriEncode(timingLabel);
 	query += "&ni=1";
 	enqueueRequest(query);
 }
@@ -285,9 +286,9 @@ void ofxGoogleAnalytics::sendEvent(string category, string action, int value, st
 		", " << ofToString(interactive) << ")";
 
 	string query = basicQuery(AnalyticsEvent);
-	query += "&ec=" + UriEncode(category);
-	if (action.size()) query += "&ea=" + UriEncode(action);
-	if (label.size()) query += "&el=" + UriEncode(label);
+	query += "&ec=" + GA_UriEncode(category);
+	if (action.size()) query += "&ea=" + GA_UriEncode(action);
+	if (label.size()) query += "&el=" + GA_UriEncode(label);
 	query += "&ev=" + ofToString(value);
 	query += "&ni=" + string(interactive ? "0" : "1");
 	enqueueRequest(query);
@@ -299,7 +300,7 @@ void ofxGoogleAnalytics::sendScreenView(string screenName){
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendScreenView(" << ofToString(screenName) <<  ")";
 	lastUserScreen = screenName;
 	string query = basicQuery(AnalyticsScreenView);
-	query += "&cd=" + UriEncode(screenName);
+	query += "&cd=" + GA_UriEncode(screenName);
 	enqueueRequest(query);
 }
 
@@ -310,8 +311,8 @@ void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle)
 		"," << ofToString(documentTitle) <<  ")";
 
 	string query = basicQuery(AnalyticsPageview);
-	if(documentTitle.size() > 0) query += "&dt=" + UriEncode(documentTitle);
-	query += "&dp=" + UriEncode("/" + documentPath);
+	if(documentTitle.size() > 0) query += "&dt=" + GA_UriEncode(documentTitle);
+	query += "&dp=" + GA_UriEncode("/" + documentPath);
 	enqueueRequest(query);
 }
 
@@ -322,7 +323,7 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 		"," << ofToString(fatal) <<  ")";
 
 	string query = basicQuery(AnalyticsException);
-	query += "&exd=" + UriEncode(description);
+	query += "&exd=" + GA_UriEncode(description);
 	query += "&exf=" + string(fatal ? "1" : "0");
 	enqueueRequest(query);
 }
@@ -335,7 +336,7 @@ void ofxGoogleAnalytics::startSession(bool restart){
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "startSession()";
 
 	string query = basicQuery(AnalyticsEvent);
-	query += "&el=" + UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
+	query += "&el=" + GA_UriEncode(string(restart ? "Restart" : "Start") + " ofxGoogleAnalytics Session");
 	query += "&sc=start";
 	if(restart){
 		query += "&ni=1";
@@ -349,7 +350,7 @@ void ofxGoogleAnalytics::endSession(bool restart){
 
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "endSession()";
 	string query = basicQuery(AnalyticsEvent);
-	query += "&el=" + UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
+	query += "&el=" + GA_UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
 	query += "&sc=end";
 	if(restart){
 		query += "&ni=1";

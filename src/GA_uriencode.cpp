@@ -7,11 +7,11 @@
 //
 // based on http://www.codeguru.com/cpp/cpp/algorithms/strings/article.php/c12759/URI-Encoding-and-Decoding.htm
 
-#include "uriencode.h"
+#include "GA_UriEncode.h"
 #include <iostream>
 
 
-std::string UriEncode(const std::string & sSrc){
+std::string GA_UriEncode(const std::string & sSrc){
 
 
 	const char DEC2HEX[16 + 1] = "0123456789ABCDEF";
@@ -23,7 +23,7 @@ std::string UriEncode(const std::string & sSrc){
 
 	for (; pSrc < SRC_END; ++pSrc)
 	{
-		if (SAFE[*pSrc])
+		if (GA_SAFE[*pSrc])
 			*pEnd++ = *pSrc;
 		else
 		{
@@ -40,7 +40,7 @@ std::string UriEncode(const std::string & sSrc){
 }
 
 
-std::string UriDecode(const std::string & sSrc){
+std::string GA_UriDecode(const std::string & sSrc){
 
 	// Note from RFC1630: "Sequences which start with a percent
 	// sign but are not followed by two hexadecimal characters
@@ -60,8 +60,8 @@ std::string UriDecode(const std::string & sSrc){
 		if (*pSrc == '%')
 		{
 			char dec1, dec2;
-			if (-1 != (dec1 = HEX2DEC[*(pSrc + 1)])
-				&& -1 != (dec2 = HEX2DEC[*(pSrc + 2)]))
+			if (-1 != (dec1 = GA_HEX2DEC[*(pSrc + 1)])
+				&& -1 != (dec2 = GA_HEX2DEC[*(pSrc + 2)]))
 			{
 				*pEnd++ = (dec1 << 4) + dec2;
 				pSrc += 3;
