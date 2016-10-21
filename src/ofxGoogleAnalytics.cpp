@@ -88,20 +88,25 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 
 	//add download listener
 	ofAddListener(http->httpResponse, this, &ofxGoogleAnalytics::googleResponse);
+	bool isDebug = false;
 	#ifdef TARGET_OSX
 		//this is ghetto TODO!
 		//http://stackoverflow.com/questions/3223753/is-there-a-macro-that-xcode-automatically-sets-in-debug-builds
 		#if !defined(__OPTIMIZE__) //
 			cfg.appVersion = GA_UriEncode(appVersion + " Debug");
+			isDebug = true;
 		#else
 			cfg.appVersion = GA_UriEncode(appVersion + " Release");
+			isDebug = false;
 		#endif
 	#else
 		#ifdef TARGET_WINDOWS
 			#if defined(_DEBUG)
 			cfg.appVersion = GA_UriEncode(appVersion + " Debug");
+			isDebug = true;
 			#else
 			cfg.appVersion = GA_UriEncode(appVersion + " Release");
+			isDebug = false;
 			#endif
 		#else
 			//!osx && !win
@@ -113,18 +118,18 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 	startedFirstSession = false;
 	reportTime = ofGetElapsedTimef();
 
-	if(doBenchmarks){
+	if(doBenchmarks && !isDebug){ //dont bench debug builds
 		//time some basic operations, send to google to compare HW performance
 		float floatB = simpleFloatBench();
 		float intB = simpleIntegerBench();
 		float sinB = simpleSinCosBench();
 		float sqrtB = simpleSqrtBench();
 
-		sendCustomTimeMeasurement("BenchMark", "FloatMathBench", floatB * 1000);
-		sendCustomTimeMeasurement("BenchMark", "IntegerMathBench", intB * 1000);
-		sendCustomTimeMeasurement("BenchMark", "SinCosBench", sinB * 1000);
-		sendCustomTimeMeasurement("BenchMark", "SqrtBench", sqrtB * 1000);
-		ofLogNotice("ofxGoogleAnalytics") << "Benchmarks took " << floatB + intB + sinB + sqrtB << "seconds";
+		sendCustomTimeMeasurement("BenchMark", "FloatMathBench2.0", floatB * 1000);
+		sendCustomTimeMeasurement("BenchMark", "IntegerMathBench2.0", intB * 1000);
+		sendCustomTimeMeasurement("BenchMark", "SinCosBench2.0", sinB * 1000);
+		sendCustomTimeMeasurement("BenchMark", "SqrtBench2.0", sqrtB * 1000);
+		ofLogNotice("ofxGoogleAnalytics") << "Benchmarks took " << floatB << " | " <<  intB << " | " << sinB << " | " << sqrtB << "seconds";
 	}
 }
 
@@ -623,22 +628,26 @@ string ofxGoogleAnalytics::generateUUID(){
 float ofxGoogleAnalytics::simpleFloatBench(){
 	float a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 50000000; i++){
-		a = (2.0f + (i * 0.1f)) / (i * 0.5f + 2.0f - 1.0f) ;
+	for(int j = 0; j < 10000; j++){
+		for(int i = 0; i < 7000; i++){
+			a += (i + 2.0f + (j * 0.1f)) / (i * (0.5f + j) + 2.0f - 1.0f);
+		}
 	}
-	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	t = ofGetElapsedTimef() - t + 0 * ofClamp(a,0,0); //overcome compiler optimizations
 	return t;
 }
 
 float ofxGoogleAnalytics::simpleIntegerBench(){
 
 	//measure how long it takes to calc 999999 common int operations
-	int a = 0;
+	int a = 1;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 5000000; i++){
-		a = (((a + i) * 3 ) / (1 + a * 2) ) / 2 - 1;
+	for(int j = 0; j < 10000; j++){
+		for(int i = 0; i < 1000; i++){
+			a += (((a + i) * 3 ) / (1 + a * 2 * j)) / (a + 2 + 1);
+		}
 	}
-	t = ofGetElapsedTimef() - t + float(a - a); //overcome compiler optimizations
+	t = ofGetElapsedTimef() - t + 0 * ofClamp(a,0,0); //overcome compiler optimizations
 	return t;
 }
 
@@ -646,20 +655,22 @@ float ofxGoogleAnalytics::simpleIntegerBench(){
 float ofxGoogleAnalytics::simpleSinCosBench(){
 	float a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 5000000; i++){
-		a = (2.0f + sinf(i * 0.1f - 0.3f)) / (cosf(i * 0.5f + 2.0f) + 2.0f) ;
+	for(int j = 0; j < 3000; j++){
+		for(int i = 0; i < 5000; i++){
+			a +=  sinf(i * 0.1f) + cosf(j * 0.5f);
+		}
 	}
-	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	t = ofGetElapsedTimef() - t + 0 * ofClamp(a,0,0); //overcome compiler optimizations
 	return t;
 }
 
 float ofxGoogleAnalytics::simpleSqrtBench(){
 	float a = 0;
 	float t = ofGetElapsedTimef();
-	for(int i = 0; i < 5000000; i++){
-		a = (2.0f + powf(i * 0.1f, 1.1f)) / (sqrtf(i * 0.5f + 2.0f) - 1.0f) ;
+	for(int i = 0; i < 7000000; i++){
+		a += (2.0f + powf(i * 0.1f, 1.1f)) / (sqrtf(i * 0.5f + 2.0f) - 1.0f);
 	}
-	t = ofGetElapsedTimef() - t + (a - a); //overcome compiler optimizations
+	t = ofGetElapsedTimef() - t + 0 * ofClamp(a,0,0); //overcome compiler optimizations
 	return t;
 }
 
