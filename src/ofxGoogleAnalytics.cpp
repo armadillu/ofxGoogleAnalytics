@@ -124,12 +124,12 @@ void ofxGoogleAnalytics::setup(string googleTrackingID_, string appName, string 
 		float intB = simpleIntegerBench();
 		float sinB = simpleSinCosBench();
 		float sqrtB = simpleSqrtBench();
+		ofLogNotice("ofxGoogleAnalytics") << "Benchmarks took " << floatB << " | " << intB << " | " << sinB << " | " << sqrtB << " seconds";
 
 		sendCustomTimeMeasurement("BenchMark", "FloatMathBench2.0", floatB * 1000);
 		sendCustomTimeMeasurement("BenchMark", "IntegerMathBench2.0", intB * 1000);
 		sendCustomTimeMeasurement("BenchMark", "SinCosBench2.0", sinB * 1000);
-		sendCustomTimeMeasurement("BenchMark", "SqrtBench2.0", sqrtB * 1000);
-		ofLogNotice("ofxGoogleAnalytics") << "Benchmarks took " << floatB << " | " <<  intB << " | " << sinB << " | " << sqrtB << "seconds";
+		sendCustomTimeMeasurement("BenchMark", "SqrtBench2.0", sqrtB * 1000);	
 	}
 }
 
