@@ -7,7 +7,7 @@
 //
 // based on http://www.codeguru.com/cpp/cpp/algorithms/strings/article.php/c12759/URI-Encoding-and-Decoding.htm
 
-#include "GA_UriEncode.h"
+#include "GA_uriencode.h"
 #include <iostream>
 
 
