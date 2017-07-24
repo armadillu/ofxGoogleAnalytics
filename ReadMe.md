@@ -1,4 +1,7 @@
 # ofxGoogleAnalytics
+
+[![Build Status](https://travis-ci.org/armadillu/ofxGoogleAnalytics.svg?branch=master)](https://travis-ci.org/armadillu/ofxGoogleAnalytics)
+
 Simple of addon to track app usage through Google Analytics. 
 
 ![Google Analytics](https://farm4.staticflickr.com/3901/14597174633_c9171b3e68_o.png)
