@@ -24,7 +24,7 @@ meta:
 common:
 	# dependencies with other addons, a list of them separated by spaces 
 	# or use += in several lines
-	  ADDON_DEPENDENCIES = ofxSimpleHttp
+	  ADDON_DEPENDENCIES = ofxSimpleHttp 
 	
 	# include search paths, this will be usually parsed from the file system
 	# but if the addon or addon libraries need special search paths they can be
@@ -61,14 +61,10 @@ common:
 	# ADDON_LIBS_EXCLUDE =
 	
 	
-	linuxarmv6l: 
-	
-	# I tried everything that came to mind, but I cant get the .c files in this addon to compile on the rPi.
-	# As a workardound, rename /libs/fontstash/src/fontstash.c and /libs/fontstash/src/stb_truetype.c to .cpp.
-	
-	# TODO the "$(addon)" is hacky as I peek through the config.addons.mk to find it and might change at any time
-	# the intention here is to get the makefile to compile the .c file (seems to only handle .cpp)
-	#  ADDON_CFLAGS = -x c $(addon)/libs/fontstash/src/fontstash.c -x c $(addon)/libs/fontstash/src/stb_truetype.c
+linux64:
+linux:
+linuxarmv6l:
+linuxarmv7l:
+android/armeabi:	
+android/armeabi-v7a:	
 
-	# ADDON_SOURCES = $(addon)/libs/fontstash/src/fontstash.c $(addon)/libs/fontstash/src/stb_truetype.c
-	
