@@ -3,3 +3,5 @@ ofxSimpleHttp
 ofxTimeMeasurements
 ofxRemoteUI
 ofxPoco
+ofxOsc
+ofxXmlSettings
