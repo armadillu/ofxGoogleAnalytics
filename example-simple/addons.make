@@ -1,3 +1,3 @@
+ofxPoco
 ofxGoogleAnalytics
 ofxSimpleHttp
-ofxPoco
