@@ -16,7 +16,7 @@
 #define UUID_FILENAME (cfg.appNameRaw + "_UUID.txt")
 
 const bool debugAnalytics = false;
-const string ofxGAVersion = "1.0";
+const std::string ofxGAVersion = "1.0";
 
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 #define GA_DEBUG_URL_ENDPOINT "https://www.google-analytics.com/debug/collect?"
@@ -36,7 +36,7 @@ class ofxGoogleAnalytics{
 
 		struct AnalyticsResponse{
 			bool ok;
-			string status;
+			std::string status;
 			int httpStatus;
 		};
 
@@ -45,11 +45,11 @@ class ofxGoogleAnalytics{
 
 		//make sure to call setup from the Main Thread or it will crash
 		//as it makes some GL calls to get GPU info
-		void setup(string googleTrackingID,
-				   string appName = "",
-				   string appVersion = "",
-				   string appID = "",
-				   string appInstallerID = "");
+		void setup(std::string googleTrackingID,
+				   std::string appName = "",
+				   std::string appVersion = "",
+				   std::string appID = "",
+				   std::string appInstallerID = "");
 
 		void update();
 		void draw(int x, int y);
@@ -62,12 +62,12 @@ class ofxGoogleAnalytics{
 		//where a "Screen" is the content unit.
 		//you can also use "web" reports, in which url's are the "content unit"
 		//which helps in apps with hierarchical organizations; see below
-		void sendScreenView(string screenName);
-		void sendException(string description, bool fatal);
-		void sendEvent(string category,
-					   string action,
+		void sendScreenView(std::string screenName);
+		void sendException(std::string description, bool fatal);
+		void sendEvent(std::string category,
+					   std::string action,
 					   int value = 0,
-					   string label = "",
+					   std::string label = "",
 					   bool interactive = true
 					   );
 
@@ -83,7 +83,7 @@ class ofxGoogleAnalytics{
 		//the event and exception types.
 		//You can also have one "Web" and one "App" view reports for
 		//the same app;
-		void sendPageView(string documentPath, string documentTitle = "");
+		void sendPageView(std::string documentPath, std::string documentTitle = "");
 
 		//manually send it whenever you want, or schedule it with setShouldReportFramerates
 		void sendFrameRateReport(); //see results in GA website in "Behvaior/App Speed"
@@ -93,16 +93,16 @@ class ofxGoogleAnalytics{
 		//if you want to time different parts of your code and report that, you can do this here
 		//and look in the "Behvaior/App Speed" section of he web interface
 		//this will be automatically re-sent every time we restart the session.
-		void sendCustomTimeMeasurement(string timingCategory, string timingVariable, int timeInMs, string timingLabel = "");
+		void sendCustomTimeMeasurement(std::string timingCategory, std::string timingVariable, int timeInMs, std::string timingLabel = "");
 
-		void setCustomUserAgent(string ua); //will be url encoded!
+		void setCustomUserAgent(std::string ua); //will be url encoded!
 
 		void setVerbose(bool);
 
-		void setUserID(string userName);
+		void setUserID(std::string userName);
 		void setSendSimpleBenchmarks(bool doBench);
 
-		void setIP(string ipAddress);
+		void setIP(std::string ipAddress);
 
 		void setRandomizeUUID(bool);
 		void setMaxRequestsPerSession(int n); //should not be > 500 or google will drop data
@@ -126,7 +126,7 @@ class ofxGoogleAnalytics{
 		//YOU MUST SETUP THIS in your google analytics account
 		// https://farm8.staticflickr.com/7648/16874457272_9bb0d95d1b_o_d.png
 
-		void sendCustomDimension(int dimensionID/*6..20*/, string value);
+		void sendCustomDimension(int dimensionID/*6..20*/, std::string value);
 
 
 		//if you want to be notified of ok / ko
@@ -135,13 +135,13 @@ class ofxGoogleAnalytics{
 	private:
 
 		struct AnalyticsConfig{
-			string trackingID;
-			string currentUUID;
-			string appName;
-			string appNameRaw;
-			string appID;
-			string appVersion;
-			string appInstallerID;
+			std::string trackingID;
+			std::string currentUUID;
+			std::string appName;
+			std::string appNameRaw;
+			std::string appID;
+			std::string appVersion;
+			std::string appInstallerID;
 		};
 
 		enum AnalyticsHitType{
@@ -153,7 +153,7 @@ class ofxGoogleAnalytics{
 		};
 
 		struct RequestQueueItem{
-			string queryString;
+			std::string queryString;
 			bool blocking;
 		};
 
@@ -163,7 +163,7 @@ class ofxGoogleAnalytics{
 		void googleResponse(ofxSimpleHttpResponse &response);
 
 
-		void sendCustomDimensionInternal(int dimensionID/*0..20*/, string value);
+		void sendCustomDimensionInternal(int dimensionID/*0..20*/, std::string value);
 		ofxSimpleHttp * http;
 
 		bool verbose;
@@ -184,25 +184,25 @@ class ofxGoogleAnalytics{
 
 		int maxRequestsPerSession;
 
-		string lastUserScreen;
+		std::string lastUserScreen;
 
 		int requestCounter;
-		vector<RequestQueueItem> requestQueue;
+		std::vector<RequestQueueItem> requestQueue;
 
-		string userID;
-		string ipAddress;
+		std::string userID;
+		std::string ipAddress;
 
 		// utils
 		void endSession(bool restart = false);
 		void startSession(bool restart = false);
 
-		string basicQuery(AnalyticsHitType type);
-		string getNewUUID();
-		string loadUUID();
-		string generateUUID();
-		string getUserAgent();
+		std::string basicQuery(AnalyticsHitType type);
+		std::string getNewUUID();
+		std::string loadUUID();
+		std::string generateUUID();
+		std::string getUserAgent();
 
-		void enqueueRequest(string queryString, bool blocking = false);
+		void enqueueRequest(std::string queryString, bool blocking = false);
 		void sendRequest(RequestQueueItem item);
 
 		float simpleFloatBench();
@@ -210,22 +210,22 @@ class ofxGoogleAnalytics{
 		float simpleSinCosBench();
 		float simpleSqrtBench();
 
-		string getComputerModel();
-		string getComputerCPU();
-		string getComputerGPU();
-		string getComputerPlatform();
+		std::string getComputerModel();
+		std::string getComputerCPU();
+		std::string getComputerGPU();
+		std::string getComputerPlatform();
 
 		void reportHardwareAsEvent();
 
 		// unique to this computer
-		string gpuName;
-		string cpuName;
-		string modelName;
-		string ofVersion;
-		string computerPlatform;
+		std::string gpuName;
+		std::string cpuName;
+		std::string modelName;
+		std::string ofVersion;
+		std::string computerPlatform;
 
 		ofMutex mutex;
-		map<int,string> customDimensions;
+		std::map<int,std::string> customDimensions;
 		void sendAllUserDefinedCustomDimensions();
 };
 

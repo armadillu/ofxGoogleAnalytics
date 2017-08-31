@@ -24,6 +24,8 @@
 #endif
 #endif
 
+using namespace std;
+
 ofxGoogleAnalytics::ofxGoogleAnalytics(){
 
 	requestCounter = 0;
