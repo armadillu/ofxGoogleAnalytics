@@ -516,7 +516,7 @@ void ofxGoogleAnalytics::reportHardwareAsEvent(){
 
 	if(computerPlatform.size()){
 		ofLogNotice("ofxGoogleAnalytics") << "Reporting my computer platform '" << computerPlatform << "'";
-		sendEvent("Software", "OF Version", 0, computerPlatform, false);
+		sendEvent("Software", "Computer Platform", 0, computerPlatform, false);
 	}
 
 }
