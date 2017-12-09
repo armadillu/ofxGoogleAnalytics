@@ -10,7 +10,7 @@
 #define __emptyExample__ofxGoogleAnalytics__
 
 #include "ofMain.h"
-#include "ofxSimpleHttpResponse.h"
+#include "ofxSimpleHttp.h"
 
 #define UUID_FILENAME (cfg.appNameRaw + "_UUID.txt")
 
