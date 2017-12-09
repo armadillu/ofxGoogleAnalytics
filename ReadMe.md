@@ -42,7 +42,9 @@ It requires [ofxSimpleHttp](https://github.com/armadillu/ofxSimpleHttp).
 
 Made following Google's "[Measurement Protocol Developer Guide](https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide)".
 
-It creates an unique UUID the first time that's launched, and it stores it in "data/UUID.txt" so that you can uniquely identify a unique app/installation instance across sessions. You can also choose to randomize the UUID per every session (you can also specify how often sessions are restarted).
+You need to go to Google Analytics and create a tracking-ID for your app to send data to. When doing so, when asked "what would you like to track", you should choose "Mobile App".
+
+ofxGoogleAnalytics creates an unique UUID the first time that's launched, and it stores it in "data/UUID.txt" so that you can uniquely identify a unique app/installation instance across sessions. You can also choose to randomize the UUID per every session (you can also specify how often sessions are restarted).
 
 All the requests are threaded in a single queue so they should not affect your app performance. But the last request does: destructing the ofxGoogleAnalytics holds the main thread for a long as it takes to send the last google request signaling end of a Session.
 
