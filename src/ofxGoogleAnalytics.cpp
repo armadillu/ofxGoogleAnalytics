@@ -24,6 +24,9 @@
 #endif
 #endif
 
+#include "GA_uriencode.h"
+#include "ofxSimpleHttp.h"
+
 using namespace std;
 
 ofxGoogleAnalytics::ofxGoogleAnalytics(){
@@ -529,6 +532,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		return;
 	}
 
+	sendMutex.lock();
 	if(!startedFirstSession){
 		startedFirstSession = true;
 		startSession(false);
@@ -549,6 +553,7 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		startSession(true);	//idem
 		sendAllUserDefinedCustomDimensions();
 	}
+	sendMutex.unlock();
 
 	RequestQueueItem item;
 	item.queryString = queryString;
@@ -556,9 +561,8 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 
 	mutex.lock();
 	requestQueue.push_back(item);
-	mutex.unlock();
-
 	requestCounter++;
+	mutex.unlock();
 }
 
 
@@ -680,7 +684,7 @@ float ofxGoogleAnalytics::simpleSqrtBench(){
 
 
 string ofxGoogleAnalytics::getNewUUID(){
-	static char alphabet[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+	char alphabet[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 	string s;
 	for(int i = 0; i < 8; i++) s += ofToString((char)alphabet[(int)floor(ofRandom(16))]);
 	s += "-";

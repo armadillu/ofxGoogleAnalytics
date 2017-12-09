@@ -10,13 +10,9 @@
 #define __emptyExample__ofxGoogleAnalytics__
 
 #include "ofMain.h"
-#include "ofxSimpleHttp.h"
-#include "GA_uriencode.h"
+#include "ofxSimpleHttpResponse.h"
 
 #define UUID_FILENAME (cfg.appNameRaw + "_UUID.txt")
-
-const bool debugAnalytics = false;
-const std::string ofxGAVersion = "1.0";
 
 #define GA_URL_ENDPOINT "http://www.google-analytics.com/collect?"
 #define GA_DEBUG_URL_ENDPOINT "https://www.google-analytics.com/debug/collect?"
@@ -30,7 +26,12 @@ const std::string ofxGAVersion = "1.0";
 
 
 
+class ofxSimpleHttp;
+
 class ofxGoogleAnalytics{
+
+	const bool debugAnalytics = false;
+	const std::string ofxGAVersion = "1.0";
 
 	public:
 
@@ -227,6 +228,8 @@ class ofxGoogleAnalytics{
 		ofMutex mutex;
 		std::map<int,std::string> customDimensions;
 		void sendAllUserDefinedCustomDimensions();
+
+		ofMutex sendMutex;
 };
 
 #endif /* defined(__emptyExample__ofxGoogleAnalytics__) */
