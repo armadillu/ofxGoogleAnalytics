@@ -532,7 +532,6 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		return;
 	}
 
-	sendMutex.lock();
 	if(!startedFirstSession){
 		startedFirstSession = true;
 		startSession(false);
@@ -547,13 +546,21 @@ void ofxGoogleAnalytics::enqueueRequest(string queryString, bool blocking){
 		sendCustomDimensionInternal(5, computerPlatform);
 	}
 
-	if (requestCounter >= maxRequestsPerSession ){ //limit of maxRequestsPerSession requests per session! restart session!
+	bool resetReqCounter = false;
+	
+	sendMutex.lock();
+	if (requestCounter >= maxRequestsPerSession ){
+		requestCounter = 0;
+		resetReqCounter = true;
+	}
+	sendMutex.unlock();
+
+	if (resetReqCounter){ //limit of maxRequestsPerSession requests per session! restart session!
 		requestCounter = 0;
 		endSession(true); 	//if true(restart), will send regadless, so we overcome the block by #requestCounter
 		startSession(true);	//idem
 		sendAllUserDefinedCustomDimensions();
 	}
-	sendMutex.unlock();
 
 	RequestQueueItem item;
 	item.queryString = queryString;
