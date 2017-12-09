@@ -355,6 +355,8 @@ void ofxGoogleAnalytics::startSession(bool restart){
 void ofxGoogleAnalytics::endSession(bool restart){
 	//ofLogNotice("ofxGoogleAnalytics") << "🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎 End Session 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎";
 
+	if (!enabled) return;
+	
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "endSession()";
 	string query = basicQuery(AnalyticsEvent);
 	query += "&el=" + GA_UriEncode(string(restart ? "Close-To-Reopen" : "End") + " ofxGoogleAnalytics Session");
