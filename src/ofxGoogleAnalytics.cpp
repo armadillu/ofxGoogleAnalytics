@@ -317,7 +317,7 @@ void ofxGoogleAnalytics::sendScreenView(string screenName){
 
 void ofxGoogleAnalytics::sendPageView(string documentPath, string documentTitle){
 	OFX_GA_CHECKS();
-	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendScreenView(" << ofToString(documentPath) <<
+	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "sendPageView(" << ofToString(documentPath) <<
 		"," << ofToString(documentTitle) <<  ")";
 
 	string query = basicQuery(AnalyticsPageview);
