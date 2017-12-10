@@ -58,6 +58,7 @@ class ofxGoogleAnalytics{
 		ofxSimpleHttp* getHttp(); //in case you want to configure things like proxy etc
 
 		void setEnabled(bool enabled_){ enabled = enabled_;}
+		bool isEnabled(){return enabled;}
 
 		//these works for "App" type reports views
 		//where a "Screen" is the content unit.
