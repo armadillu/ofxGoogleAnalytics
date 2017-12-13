@@ -53,6 +53,7 @@ class ofxGoogleAnalytics{
 				   std::string appInstallerID = "");
 
 		void update();
+		std::string getStatusInfoString();
 		void draw(int x, int y);
 
 		ofxSimpleHttp* getHttp(); //in case you want to configure things like proxy etc

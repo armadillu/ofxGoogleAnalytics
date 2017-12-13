@@ -184,16 +184,21 @@ void ofxGoogleAnalytics::update(){
 	}
 }
 
+std::string ofxGoogleAnalytics::getStatusInfoString(){
+	
+	std::string httpS = http->drawableString();
+	
+	mutex.lock();
+	std::string fullS =
+	"ofxGoogleAnalytics: " + ofToString(requestQueue.size()) + " Queued Requests" +
+	"\nRequestsThisSession: " + ofToString(requestCounter) + " / " +
+	ofToString(maxRequestsPerSession) + "\n" +  httpS;
+	mutex.unlock();
+	return fullS;
+}
 
 void ofxGoogleAnalytics::draw(int x, int y){
-	string httpS = http->drawableString();
-	mutex.lock();
-	ofDrawBitmapString("ofxGoogleAnalytics: " + ofToString(requestQueue.size()) + " Queued Requests" +
-					   "\nRequestsThisSession: " + ofToString(requestCounter) + " / " +
-					   ofToString(maxRequestsPerSession) + "\n\n" +  httpS
-					   , x, y);
-	mutex.unlock();
-
+	ofDrawBitmapString(getStatusInfoString(), x, y);
 }
 
 
@@ -340,7 +345,6 @@ void ofxGoogleAnalytics::sendException(string description, bool fatal){
 
 
 void ofxGoogleAnalytics::startSession(bool restart){
-	//ofLogNotice("ofxGoogleAnalytics") << "🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏  Start Session  🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏";
 	if(randomizeUUID) generateUUID();
 
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "startSession()";
@@ -356,8 +360,6 @@ void ofxGoogleAnalytics::startSession(bool restart){
 
 
 void ofxGoogleAnalytics::endSession(bool restart){
-	//ofLogNotice("ofxGoogleAnalytics") << "🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎 End Session 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎";
-
 	if (!enabled) return;
 	
 	if(verbose) ofLogNotice("ofxGoogleAnalytics") << "endSession()";
