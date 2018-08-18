@@ -491,6 +491,7 @@ string ofxGoogleAnalytics::getComputerPlatform(){
 		case OF_TARGET_LINUX64: return "Linux 64"; break;
 		case OF_TARGET_LINUXARMV6L: return "Linux ARM v6"; break;
 		case OF_TARGET_LINUXARMV7L: return "Linux ARM v7"; break;
+		default: break;
 	}
 	return "Unknown Platform";
 }
