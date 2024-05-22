@@ -4,6 +4,8 @@
 
 Simple of addon to track app usage through Google Analytics. 
 
+**NOTE** This doesn't work anymore, as google closed down the [Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide).
+
 ![Google Analytics](https://farm4.staticflickr.com/3901/14597174633_c9171b3e68_o.png)
 
 To use it, do the following:
