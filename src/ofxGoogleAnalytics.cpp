@@ -13,6 +13,7 @@
 #include <sys/sysctl.h>
 #import <IOKit/IOKitLib.h>
 #import <IOKit/Graphics/IOFrameBufferShared.h>
+#include <CoreServices/CoreServices.h>
 #endif
 
 #ifdef TARGET_WIN32
